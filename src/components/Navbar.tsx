@@ -29,14 +29,14 @@ export default function Navbar() {
     
     // Fetch user
     if (supabase) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      (supabase.auth.getSession() as any).then(({ data: { session } }: any) => {
         if (session) {
           setUser(session.user);
           setIsAdminUser(isAdmin(session.user.email));
         }
       });
       
-      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: authListener } = supabase.auth.onAuthStateChange((event: string, session: any) => {
         if (session) {
           setUser(session.user);
           setIsAdminUser(isAdmin(session.user.email));

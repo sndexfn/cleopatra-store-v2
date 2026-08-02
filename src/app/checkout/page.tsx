@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useCartStore } from "@/lib/store";
 import { useLangStore } from "@/lib/langStore";
+import { supabase } from "@/lib/supabase";
 import { arabicDict, englishDict } from "@/lib/dictionary";
 import { calculateFinalPrice, getLiveGoldPrices, GoldPrices, formatCurrency } from "@/lib/goldPrice";
 import styles from "./page.module.css";
@@ -116,6 +117,43 @@ export default function CheckoutPage() {
       });
 
       if (response.ok) {
+        // Persist order in Supabase / Local mock db
+        if (supabase) {
+          const orderItems = items.map(item => {
+            const finalPrice = calculateFinalPrice(
+              item.product.weightGrams,
+              item.product.karat,
+              item.product.makingChargeUSD,
+              prices!
+            );
+            return {
+              id: item.product.id,
+              name: item.product.name,
+              quantity: item.quantity,
+              price: finalPrice.totalUSD
+            };
+          });
+
+          let userEmail = '';
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.email) {
+              userEmail = session.user.email;
+            }
+          } catch (err) {
+            console.warn(err);
+          }
+
+          await supabase.from('orders').insert({
+            customer_name: formData.name,
+            customer_email: userEmail || 'guest@example.com',
+            customer_phone: formData.phone,
+            total_usd: grandTotalUSD,
+            status: 'pending',
+            items: orderItems,
+          });
+        }
+
         setSuccess(true);
         clearCart();
       } else {

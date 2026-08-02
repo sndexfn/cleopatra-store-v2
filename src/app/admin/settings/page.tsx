@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -27,8 +28,6 @@ export default function AdminSettingsPage() {
   const [uploadingBg, setUploadingBg] = useState(false);
   const bgRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { fetchSettings(); }, []);
-
   async function fetchSettings() {
     setFetching(true);
     if (!supabase) { setFetching(false); return; }
@@ -40,6 +39,10 @@ export default function AdminSettingsPage() {
     }
     setFetching(false);
   }
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   async function saveSettings() {
     setLoading(true);

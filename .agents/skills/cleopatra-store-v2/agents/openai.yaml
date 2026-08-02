@@ -1,0 +1,6 @@
+interface:
+  display_name: "Cleopatra Store V2"
+  short_description: "Repo-specific patterns and workflows for cleopatra-store-v2"
+  default_prompt: "Use the cleopatra-store-v2 repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true

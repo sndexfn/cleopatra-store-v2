@@ -1,0 +1,4 @@
+node_modules/
+.next/
+dev_server.log
+next-env.d.ts

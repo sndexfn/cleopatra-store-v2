@@ -1,1 +1,0 @@
-# cleopatra-store-v2

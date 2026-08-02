@@ -3,11 +3,12 @@
 import { useUIStore } from "@/lib/uiStore";
 import { useCartStore } from "@/lib/store";
 import styles from "./Drawers.module.css";
-import { X, Trash2, User, Phone, Mail, MapPin, CheckCircle } from "lucide-react";
+import { X, Trash2, User, Phone, Mail, MapPin, CheckCircle, LogOut, LayoutDashboard } from "lucide-react";
 import { getLiveGoldPrices, calculateFinalPrice, formatCurrency, GoldPrices } from "@/lib/goldPrice";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { supabase, isAdmin } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export default function Drawers() {
   const {
@@ -20,10 +21,24 @@ export default function Drawers() {
   const [orderDone, setOrderDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', city: '', notes: '' });
+  const [user, setUser] = useState<any>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     getLiveGoldPrices().then(setPrices);
-  }, [isCartOpen, isCheckoutOpen]);
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        setIsAdminUser(isAdmin(session?.user?.email));
+      });
+      const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+        setUser(session?.user ?? null);
+        setIsAdminUser(isAdmin(session?.user?.email));
+      });
+      return () => listener.subscription.unsubscribe();
+    }
+  }, []);
 
   let grandTotalUSD = 0;
   if (prices) {
@@ -201,12 +216,72 @@ export default function Drawers() {
             <h2>القائمة</h2>
           </div>
           <div className={styles.drawerBody}>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '1.2rem' }}>
-              <li><a href="/" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>الرئيسية</a></li>
-              <li><a href="/shop" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>المتجر</a></li>
-              <li><a href="/about" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>من نحن</a></li>
-              <li><a href="/login" style={{ color: 'var(--gold-primary)', textDecoration: 'none' }}>تسجيل الدخول</a></li>
+            {/* User Info */}
+            {user && (
+              <div style={{ background: 'rgba(197,168,92,0.08)', borderRadius: '10px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(197,168,92,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <User size={20} color="var(--gold-primary)" />
+                </div>
+                <div>
+                  <p style={{ color: 'var(--gold-primary)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.2rem' }}>
+                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', direction: 'ltr' }}>{user.email}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Nav Links */}
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {[
+                { href: '/', label: '🏠 الرئيسية' },
+                { href: '/shop', label: '💍 المتجر' },
+                { href: '/about', label: '📖 من نحن' },
+              ].map(item => (
+                <li key={item.href}>
+                  <a href={item.href} onClick={closeMenu} style={{ display: 'block', padding: '0.85rem 1rem', color: 'var(--text-light)', textDecoration: 'none', borderRadius: '8px', fontSize: '1.05rem', transition: 'background 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+
+              {/* Admin Link */}
+              {isAdminUser && (
+                <li>
+                  <a href="/admin" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1rem', color: 'var(--gold-primary)', textDecoration: 'none', borderRadius: '8px', fontSize: '1.05rem', background: 'rgba(197,168,92,0.08)' }}>
+                    <LayoutDashboard size={18} /> لوحة التحكم
+                  </a>
+                </li>
+              )}
             </ul>
+
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '1.5rem 0' }} />
+
+            {/* Login / Logout */}
+            {user ? (
+              <button
+                onClick={async () => {
+                  if (supabase) await supabase.auth.signOut();
+                  setUser(null);
+                  closeMenu();
+                  router.push('/');
+                  router.refresh();
+                }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '0.9rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 600, transition: 'all 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+              >
+                <LogOut size={18} /> تسجيل الخروج
+              </button>
+            ) : (
+              <a href="/login" onClick={closeMenu}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '0.9rem', background: 'var(--gold-primary)', borderRadius: '10px', color: '#000', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
+                <User size={18} /> تسجيل الدخول
+              </a>
+            )}
           </div>
         </div>
       </div>

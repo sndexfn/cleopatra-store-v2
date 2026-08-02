@@ -1,0 +1,171 @@
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent, var(--gold-primary), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(197, 168, 92, 0.25);
+  border-color: var(--gold-primary);
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+.imageContainer {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.imageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .imageContainer img {
+  transform: scale(1.08);
+}
+
+.karatBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-brown));
+  color: #030712;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  letter-spacing: 0.05em;
+  z-index: 10;
+}
+
+.content {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.title {
+  font-size: 1.35rem;
+  font-family: var(--font-base);
+  font-weight: 700;
+  color: var(--gold-pale);
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.card:hover .title {
+  color: var(--gold-primary);
+}
+
+.description {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.details {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px dashed rgba(197, 168, 92, 0.15);
+  border-bottom: 1px dashed rgba(197, 168, 92, 0.15);
+  padding: 0.75rem 0;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.detailVal {
+  font-weight: 700;
+  color: var(--gold-pale);
+}
+
+.priceContainer {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.usdPrice {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: -0.02em;
+}
+
+.iqdPrice {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.addToCart {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(197, 168, 92, 0.08), rgba(138, 111, 45, 0.08));
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-primary);
+  padding: 0.85rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.addToCart:hover {
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-brown));
+  color: #030712;
+  box-shadow: 0 8px 20px rgba(197, 168, 92, 0.3);
+  transform: translateY(-1px);
+}

@@ -1,0 +1,150 @@
+.main {
+  flex: 1;
+  padding: 4rem 1.5rem;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.title {
+  font-size: 2.5rem;
+  color: var(--gold-pale);
+  margin-bottom: 2rem;
+  font-family: var(--font-heading);
+}
+
+.cartContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+}
+
+@media (max-width: 900px) {
+  .cartContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cartItem {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  gap: 1.5rem;
+}
+
+.itemImage {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.itemDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.itemName {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.itemSpecs {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.itemActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.quantityControl {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+}
+
+.qtyBtn {
+  background: none;
+  border: none;
+  color: var(--gold-primary);
+  font-size: 1.2rem;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--error);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.summary {
+  background: var(--bg-card);
+  border: 1px solid var(--gold-primary);
+  border-radius: 8px;
+  padding: 2rem;
+  height: fit-content;
+}
+
+.summaryTitle {
+  font-size: 1.5rem;
+  color: var(--gold-pale);
+  margin-bottom: 1.5rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+}
+
+.checkoutBtn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-brown));
+  color: var(--bg-primary);
+  border: none;
+  padding: 1rem;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  cursor: pointer;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text-secondary);
+}

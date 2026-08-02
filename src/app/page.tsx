@@ -1,79 +1,121 @@
 "use client";
-
 import styles from "./page.module.css";
 import Navbar from "@/components/Navbar";
-import { Gem, TrendingUp, ShieldCheck } from "lucide-react";
-import { useLangStore } from "@/lib/langStore";
-import { arabicDict, englishDict } from "@/lib/dictionary";
+import { Gem, TrendingUp, ShieldCheck, Star, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getProducts, Product } from "@/lib/supabase";
+import { getLiveGoldPrices, calculateFinalPrice, formatCurrency } from "@/lib/goldPrice";
 
 export default function Home() {
-  const { lang } = useLangStore();
-  const d = lang === "ar" ? arabicDict : englishDict;
-  const isRtl = lang === "ar";
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [prices, setPrices] = useState<any>(null);
+
+  useEffect(() => {
+    Promise.all([getProducts(), getLiveGoldPrices()]).then(([prods, p]) => {
+      setFeaturedProducts(prods.slice(0, 3));
+      setPrices(p);
+    });
+  }, []);
 
   return (
     <>
       <Navbar />
-      <main className={styles.main} dir={isRtl ? "rtl" : "ltr"}>
-        {/* Luxury Hero Section */}
+      <main className={styles.main}>
+        {/* Hero */}
         <section className={styles.hero}>
+          <div className={styles.heroOverlay} />
           <div className={styles.heroContent}>
-            {/* Iraq Target Badge */}
-            <div className={styles.iraqBadge}>
-              <span>{d.iraqDeliveryBadge}</span>
+            <div className={styles.badge}>🇮🇶 التوصيل لجميع محافظات العراق</div>
+            <h1 className={styles.title}>كليوباترا للذهب</h1>
+            <div className={styles.divider}><span>✦</span></div>
+            <p className={styles.subtitle}>أفخر أنواع الذهب والمجوهرات الأصيلة منذ 1975 — جودة ملكية بأسعار شفافة</p>
+            <div className={styles.heroBtns}>
+              <Link href="/shop" className={styles.ctaBtn}>تسوق الآن <ArrowLeft size={18} /></Link>
+              <Link href="/about" className={styles.outlineBtn}>قصتنا</Link>
             </div>
-
-            <h1 className={styles.title}>{d.heroTitle}</h1>
-
-            <div className={styles.decorativeLine}></div>
-
-            <p className={styles.subtitle}>{d.heroSubtitle}</p>
-
-            <Link href="/shop">
-              <button className={styles.ctaButton}>
-                {d.shopNow}
-              </button>
-            </Link>
           </div>
         </section>
 
-        {/* Feature Highlights Showcase */}
+        {/* Stats */}
+        <section className={styles.stats}>
+          <div className={styles.statItem}><span className={styles.statNum}>+50</span><span className={styles.statLabel}>عاماً من الخبرة</span></div>
+          <div className={styles.statDivider} />
+          <div className={styles.statItem}><span className={styles.statNum}>+10K</span><span className={styles.statLabel}>زبون سعيد</span></div>
+          <div className={styles.statDivider} />
+          <div className={styles.statItem}><span className={styles.statNum}>100%</span><span className={styles.statLabel}>ذهب أصلي مضمون</span></div>
+          <div className={styles.statDivider} />
+          <div className={styles.statItem}><span className={styles.statNum}>3</span><span className={styles.statLabel}>أعيار متوفرة</span></div>
+        </section>
+
+        {/* Featured Products */}
+        {featuredProducts.length > 0 && (
+          <section className={styles.featured}>
+            <div className={styles.sectionHeader}>
+              <h2>المنتجات المميزة</h2>
+              <div className={styles.divider}><span>✦</span></div>
+            </div>
+            <div className={styles.productsGrid}>
+              {featuredProducts.map(p => (
+                <div key={p.id} className={styles.productCard}>
+                  <div className={styles.productImgWrap}>
+                    <img src={p.imageUrl} alt={p.name} className={styles.productImg} />
+                    <span className={styles.karatBadge}>عيار {p.karat}</span>
+                  </div>
+                  <div className={styles.productBody}>
+                    <h3>{p.name}</h3>
+                    <p>{p.description}</p>
+                    {prices && (
+                      <span className={styles.price}>
+                        {formatCurrency(calculateFinalPrice(p.weightGrams, p.karat, p.makingChargeUSD, prices).totalUSD, 'USD')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+              <Link href="/shop" className={styles.ctaBtn}>عرض جميع المنتجات <ArrowLeft size={18} /></Link>
+            </div>
+          </section>
+        )}
+
+        {/* Features */}
         <section className={styles.features}>
-          <div className={styles.featuresTitleSection}>
-            <h2 className={styles.featuresMainTitle}>{d.featuresTitle}</h2>
-            <div className={styles.decorativeLine}></div>
+          <div className={styles.sectionHeader}>
+            <h2>لماذا كليوباترا؟</h2>
+            <div className={styles.divider}><span>✦</span></div>
           </div>
-
-          <div className={styles.featuresContainer}>
-            {/* Feature 1: Live Global Pricing */}
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
-                <TrendingUp size={36} />
+          <div className={styles.featuresGrid}>
+            {[
+              { icon: <TrendingUp size={32} />, title: 'أسعار لحظية شفافة', desc: 'أسعارنا محسوبة مباشرة وفق سعر الذهب العالمي اللحظي بدون تلاعب' },
+              { icon: <Gem size={32} />, title: 'تصاميم حصرية فاخرة', desc: 'مجموعات مصممة خصيصاً تجمع بين الأصالة العراقية والأناقة العصرية' },
+              { icon: <ShieldCheck size={32} />, title: 'ضمان الأصالة', desc: 'شهادة ضمان لكل قطعة وأعيار موثوقة 18، 21، 24' },
+              { icon: <Star size={32} />, title: 'خدمة متميزة', desc: 'فريق متخصص يرافقك من الاختيار حتى التسليم بأمان تام' },
+            ].map((f, i) => (
+              <div key={i} className={styles.featureCard}>
+                <div className={styles.featureIcon}>{f.icon}</div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
               </div>
-              <h3 className={styles.featureTitle}>{d.feature1Title}</h3>
-              <p className={styles.featureDesc}>{d.feature1Desc}</p>
-            </div>
-            
-            {/* Feature 2: Exclusive Luxury Designs */}
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
-                <Gem size={36} />
-              </div>
-              <h3 className={styles.featureTitle}>{d.feature2Title}</h3>
-              <p className={styles.featureDesc}>{d.feature2Desc}</p>
-            </div>
-
-            {/* Feature 3: Insured Iraq Delivery */}
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
-                <ShieldCheck size={36} />
-              </div>
-              <h3 className={styles.featureTitle}>{d.feature3Title}</h3>
-              <p className={styles.featureDesc}>{d.feature3Desc}</p>
-            </div>
+            ))}
           </div>
         </section>
+
+        {/* CTA Banner */}
+        <section className={styles.ctaBanner}>
+          <h2>هل تبحث عن هدية مميزة؟</h2>
+          <p>تواصل معنا مباشرة عبر واتساب للطلبات الخاصة والحفلات</p>
+          <a href="https://wa.me/9647724434443" target="_blank" rel="noopener noreferrer" className={styles.whatsappBtn}>
+            💬 تواصل معنا على واتساب
+          </a>
+        </section>
+
+        {/* Footer */}
+        <footer className={styles.footer}>
+          <p>© 2025 كليوباترا للذهب — جميع الحقوق محفوظة</p>
+          <p style={{ fontSize: '0.8rem', opacity: 0.5, marginTop: '0.5rem' }}>بغداد، العراق | {'+964'} 772 443 4443</p>
+        </footer>
       </main>
     </>
   );

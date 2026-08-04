@@ -16,7 +16,7 @@
   --success: #10b981;
   --error: #ef4444;
   --container-max: 1200px;
-  --header-height: 85px;
+  --header-height: 92px;
   --font-base: var(--font-cairo), sans-serif;
   --font-heading: var(--font-playfair), serif;
 }
@@ -45,5 +45,5 @@ img { max-width: 100%; }
 
 /* Mobile-first responsive */
 @media (max-width: 768px) {
-  :root { --header-height: 65px; }
+  :root { --header-height: 84px; }
 }

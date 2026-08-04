@@ -1,0 +1,28 @@
+
+> cleopatra-store@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.12 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 1391ms
+
+○ Compiling / ...
+⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET / 200 in 6.3s (next.js: 5.6s, application-code: 707ms)
+ GET /api/gold-price 200 in 919ms (next.js: 651ms, application-code: 268ms)
+ GET /api/gold-price 200 in 122ms (next.js: 3ms, application-code: 119ms)
+ GET /api/gold-price 200 in 120ms (next.js: 3ms, application-code: 117ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET / 200 in 128ms (next.js: 7ms, application-code: 121ms)
+ GET /api/gold-price 200 in 121ms (next.js: 3ms, application-code: 118ms)
+ GET /api/gold-price 200 in 133ms (next.js: 3ms, application-code: 129ms)
+ GET /api/gold-price 200 in 114ms (next.js: 3ms, application-code: 111ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /shop. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /shop 200 in 972ms (next.js: 842ms, application-code: 130ms)
+ GET /api/gold-price 200 in 238ms (next.js: 8ms, application-code: 230ms)
+ GET /api/gold-price 200 in 128ms (next.js: 3ms, application-code: 125ms)
+ GET /api/gold-price 200 in 114ms (next.js: 3ms, application-code: 111ms)

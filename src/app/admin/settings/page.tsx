@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Save, Upload, RefreshCw, Trash2, Plus, AlertCircle, Coins } from 'lucide-react';
+import { Save, Upload, RefreshCw, Trash2, Plus, Coins } from 'lucide-react';
 
 type SiteSettings = {
   story_text: string;
@@ -12,7 +12,7 @@ type SiteSettings = {
 };
 
 const defaultSettings: SiteSettings = {
-  story_text: `تأسس متجر كلياباترا للمجوهرات عام 1975 على يد صاحبه الذي حمل معه حلماً بتقديم أفخر أنواع الذهب والمجوهرات لأبناء العراق. على مدار خمسة عقود، أصبحنا الوجهة الأولى للعائلات والأفراد الباحثين عن الجودة والأصالة.\n\nنلتزم بتقديم ذهب حقيقي بأعيار موثوقة (18، 21، 24) مع شهادات ضمان لكل قطعة، وأسعار شفافة محسوبة وفق سعر الذهب العالمي اللحظي.`,
+  story_text: `تأسس متجر كليوباترا للمجوهرات عام 1975 على يد صاحبه الذي حمل معه حلماً بتقديم أفخر أنواع الذهب والمجوهرات لأبناء العراق. على مدار خمسة عقود، أصبحنا الوجهة الأولى للعائلات والأفراد الباحثين عن الجودة والأصالة.\n\nنلتزم بتقديم ذهب حقيقي بأعيار موثوقة (18، 21، 24) مع شهادات ضمان لكل قطعة، وأسعار شفافة محسوبة وفق سعر الذهب العالمي اللحظي.`,
   stats_years: '+50',
   stats_customers: '+10K',
   stats_karat_count: '3',
@@ -37,57 +37,95 @@ export default function AdminSettingsPage() {
   const [newSlideUrl, setNewSlideUrl] = useState('');
 
   useEffect(() => {
-    fetchSettings();
-    loadOverridesAndSlides();
+    fetchSettingsAndOverrides();
   }, []);
 
-  function loadOverridesAndSlides() {
-    if (typeof window !== 'undefined') {
+  async function fetchSettingsAndOverrides() {
+    setFetching(true);
+
+    // Default fallback slides
+    let loadedSlides = [
+      '/slider-1.jpg',
+      'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200&auto=format&fit=crop'
+    ];
+
+    if (!supabase) {
+      // LocalStorage mode
       setGold21kIQD(localStorage.getItem('override_gold_21k_iqd_per_gram') || '');
       setSilverIQD(localStorage.getItem('override_silver_iqd_per_gram') || '');
       setExchangeRate(localStorage.getItem('override_exchange_rate') || '1310');
-
       const custom = localStorage.getItem('custom_slides');
       if (custom) {
-        try {
-          setSlides(JSON.parse(custom));
-        } catch {
-          setSlides(['/slider-1.jpg']);
-        }
-      } else {
-        setSlides([
-          '/slider-1.jpg',
-          'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1200&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200&auto=format&fit=crop'
-        ]);
+        try { loadedSlides = JSON.parse(custom); } catch {}
       }
+      setSlides(loadedSlides);
+      setFetching(false);
+      return;
     }
-  }
 
-  async function fetchSettings() {
-    setFetching(true);
-    if (!supabase) { setFetching(false); return; }
-    const { data, error } = await supabase.from('site_settings').select('*');
-    if (!error && data && data.length > 0) {
-      const obj: any = {};
-      data.forEach((row: any) => { obj[row.key] = row.value; });
-      setSettings(prev => ({ ...prev, ...obj }));
+    try {
+      const { data, error } = await supabase.from('site_settings').select('*');
+      if (!error && data && data.length > 0) {
+        const obj: any = {};
+        data.forEach((row: any) => { obj[row.key] = row.value; });
+
+        // Map settings
+        setSettings(prev => ({
+          ...prev,
+          story_text: obj.story_text || prev.story_text,
+          stats_years: obj.stats_years || prev.stats_years,
+          stats_customers: obj.stats_customers || prev.stats_customers,
+          stats_karat_count: obj.stats_karat_count || prev.stats_karat_count,
+          hero_bg_url: obj.hero_bg_url || prev.hero_bg_url,
+        }));
+
+        // Map Price Overrides from DB
+        setGold21kIQD(obj.override_gold_21k_iqd_per_gram || '');
+        setSilverIQD(obj.override_silver_iqd_per_gram || '');
+        setExchangeRate(obj.override_exchange_rate || '1310');
+
+        // Map Slides from DB
+        if (obj.custom_slides) {
+          try {
+            const parsed = JSON.parse(obj.custom_slides);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              loadedSlides = parsed;
+            }
+          } catch {}
+        }
+      }
+    } catch (e) {
+      console.error("Error loading global settings from DB:", e);
     }
+
+    setSlides(loadedSlides);
     setFetching(false);
   }
 
   async function saveSettings() {
     setLoading(true);
 
-    // Save DB site settings
+    const overrideObj = {
+      override_gold_21k_iqd_per_gram: gold21kIQD.trim(),
+      override_silver_iqd_per_gram: silverIQD.trim(),
+      override_exchange_rate: exchangeRate.trim() || '1310',
+      custom_slides: JSON.stringify(slides),
+    };
+
+    // 1. Save globally in Supabase DB
     if (supabase) {
-      const rows = Object.entries(settings).map(([key, value]) => ({ key, value }));
-      for (const row of rows) {
+      const dbPayload = [
+        ...Object.entries(settings).map(([key, value]) => ({ key, value })),
+        ...Object.entries(overrideObj).map(([key, value]) => ({ key, value }))
+      ];
+
+      for (const row of dbPayload) {
         await supabase.from('site_settings').upsert({ key: row.key, value: row.value }, { onConflict: 'key' });
       }
     }
 
-    // Save Price overrides & Slider list in localStorage
+    // 2. Save locally in localStorage for mock mode/immediate state consistency
     if (typeof window !== 'undefined') {
       if (gold21kIQD.trim()) {
         localStorage.setItem('override_gold_21k_iqd_per_gram', gold21kIQD.trim());
@@ -136,22 +174,29 @@ export default function AdminSettingsPage() {
     setSlides(prev => prev.filter((_, idx) => idx !== index));
   };
 
-  const handleResetPrices = () => {
+  const handleResetPrices = async () => {
     setGold21kIQD('');
     setSilverIQD('');
     setExchangeRate('1310');
+
+    if (supabase) {
+      await supabase.from('site_settings').upsert({ key: 'override_gold_21k_iqd_per_gram', value: '' }, { onConflict: 'key' });
+      await supabase.from('site_settings').upsert({ key: 'override_silver_iqd_per_gram', value: '' }, { onConflict: 'key' });
+      await supabase.from('site_settings').upsert({ key: 'override_exchange_rate', value: '1310' }, { onConflict: 'key' });
+    }
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('override_gold_21k_iqd_per_gram');
       localStorage.removeItem('override_silver_iqd_per_gram');
       localStorage.setItem('override_exchange_rate', '1310');
     }
-    alert('تم إعادة تعيين الأسعار لتعود إلى الأسعار العالمية التلقائية اللحظية.');
+    alert('تم إعادة تعيين الأسعار لتعود إلى الأسعار العالمية التلقائية اللحظية للجميع.');
   };
 
   if (fetching) return <p style={{ color: 'var(--text-muted)', padding: '2rem' }}>جاري التحميل...</p>;
 
   const inputStyle = { width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '1rem', fontFamily: 'inherit', outline: 'none' };
-  const labelStyle = { display: 'block', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' };
+  const labelStyle = { display: 'block', color: 'var(--text-secondary)', marginBottom: '0.4rem', fontSize: '0.9rem' };
   const sectionStyle = { background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' };
 
   return (
@@ -159,17 +204,17 @@ export default function AdminSettingsPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.8rem', color: 'var(--gold-pale)' }}>إعدادات الموقع والأسعار</h1>
         <button onClick={saveSettings} disabled={loading} style={{ background: 'var(--gold-primary)', color: '#000', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1rem' }}>
-          {loading ? <><RefreshCw size={18} className="spin" /> جاري الحفظ...</> : <><Save size={18} /> {saved ? '✅ تم الحفظ!' : 'حفظ التغييرات'}</>}
+          {loading ? <><RefreshCw size={18} className="spin" /> جاري الحفظ...</> : <><Save size={18} /> {saved ? '✅ تم الحفظ للجميع!' : 'حفظ التغييرات ونشرها للجمهور'}</>}
         </button>
       </div>
 
       {/* Gold & Silver Pricing Overrides Section */}
       <div style={{ ...sectionStyle, borderLeft: '4px solid var(--gold-primary)' }}>
         <h2 style={{ color: 'var(--gold-primary)', marginBottom: '0.5rem', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Coins size={20} /> التحكم بأسعار الذهب والفضة (يدوي / تلقائي)
+          <Coins size={20} /> التحكم بأسعار الذهب والفضة (يدوي / تلقائي للجمهور)
         </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-          إذا تركت الحقول فارغة، سيقوم النظام تلقائياً بجلب أسعار الذهب والفضة العالمية المحدثة لحظياً عبر API. أدخل قيمة محددة إذا أردت تثبيت السعر يدويًا بالدينار العراقي.
+          إذا تركت الحقول فارغة، سيقوم النظام تلقائياً بجلب أسعار الذهب والفضة العالمية المحدثة لحظياً عبر API. أدخل قيمة محددة إذا أردت تثبيت السعر يدويًا بالدينار العراقي وسيتحدث فورياً لجميع زوار الموقع.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
@@ -219,16 +264,16 @@ export default function AdminSettingsPage() {
               fontWeight: 600
             }}
           >
-            🔄 إعادة تعيين للأسعار العالمية اللحظية
+            🔄 إعادة تعيين للأسعار العالمية اللحظية للعامة
           </button>
         </div>
       </div>
 
       {/* Hero Interactive Slider Banners Section */}
       <div style={sectionStyle}>
-        <h2 style={{ color: 'var(--gold-primary)', marginBottom: '0.5rem', fontSize: '1.2rem' }}>🖼️ صور البانر المتحرك في الواجهة الرئيسية (Slider)</h2>
+        <h2 style={{ color: 'var(--gold-primary)', marginBottom: '0.5rem', fontSize: '1.2rem' }}>🖼️ صور البانر المتحرك في الواجهة الرئيسية (Slider للجميع)</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-          أضف أو احذف الصور التي تظهر خلف النص في الواجهة الأمامية بشكل متحرك.
+          أضف أو احذف الصور التي تظهر خلف النص في الواجهة الأمامية بشكل متحرك لجميع الزوار.
         </p>
 
         {/* List of current slides */}
@@ -314,7 +359,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <button onClick={saveSettings} disabled={loading} style={{ background: 'var(--gold-primary)', color: '#000', border: 'none', borderRadius: '8px', padding: '0.75rem 2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1rem', marginTop: '1rem' }}>
-        <Save size={18} /> {saved ? '✅ تم الحفظ!' : 'حفظ كل التغييرات'}
+        <Save size={18} /> {saved ? '✅ تم الحفظ للجميع!' : 'حفظ كل التغييرات ونشرها'}
       </button>
     </div>
   );

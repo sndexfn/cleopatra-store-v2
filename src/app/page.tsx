@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { Gem, TrendingUp, ShieldCheck, Star, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getProducts, Product } from "@/lib/supabase";
+import { supabase, getProducts, Product } from "@/lib/supabase";
 import { getLiveGoldPrices, calculateFinalPrice, formatCurrency } from "@/lib/goldPrice";
 import { useLangStore } from "@/lib/langStore";
 import { arabicDict, englishDict } from "@/lib/dictionary";
@@ -29,20 +29,51 @@ export default function Home() {
       setPrices(p);
     });
 
-    // Fetch customized slides if they exist in localStorage
-    if (typeof window !== 'undefined') {
-      const custom = localStorage.getItem('custom_slides');
-      if (custom) {
+    // Fetch customized slides (First Priority: Supabase Global DB, Second Priority: LocalStorage)
+    async function loadGlobalSlides() {
+      let loadedSlides = [
+        '/slider-1.jpg',
+        'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200&auto=format&fit=crop'
+      ];
+
+      if (supabase) {
         try {
-          const parsed = JSON.parse(custom);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setSlides(parsed);
+          const { data } = await supabase.from('site_settings').select('*');
+          if (data && data.length > 0) {
+            const foundRow = data.find((row: any) => row.key === 'custom_slides');
+            if (foundRow && foundRow.value) {
+              const parsed = JSON.parse(foundRow.value);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setSlides(parsed);
+                return;
+              }
+            }
           }
         } catch (e) {
-          console.error('Error loading custom slides', e);
+          console.error('Error loading slides from global DB', e);
         }
       }
+
+      // Fallback to local storage if DB didn't succeed
+      if (typeof window !== 'undefined') {
+        const custom = localStorage.getItem('custom_slides');
+        if (custom) {
+          try {
+            const parsed = JSON.parse(custom);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              loadedSlides = parsed;
+            }
+          } catch (e) {
+            console.error('Error loading custom slides', e);
+          }
+        }
+      }
+
+      setSlides(loadedSlides);
     }
+
+    loadGlobalSlides();
   }, []);
 
   // Slide transition timer

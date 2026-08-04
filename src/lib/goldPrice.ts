@@ -1,4 +1,5 @@
-// This handles gold and silver price calculations with manager overrides
+// This handles gold and silver price calculations with global database and local manager overrides
+import { supabase } from './supabase';
 
 export type GoldPrices = {
   usdPerOunce: number;
@@ -33,7 +34,42 @@ export async function getLiveGoldPrices(): Promise<GoldPrices> {
     console.log('Using fallback gold prices');
   }
 
-  // Apply manager overrides from localStorage if present on the client side
+  // 1. First Priority: Load global database overrides from Supabase (for ALL public visitors)
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('site_settings').select('*');
+      if (!error && data && data.length > 0) {
+        const obj: any = {};
+        data.forEach((row: any) => { obj[row.key] = row.value; });
+
+        const overrideExchangeRate = obj.override_exchange_rate;
+        const iqdRate = overrideExchangeRate ? parseFloat(overrideExchangeRate) : apiPrices.iqdExchangeRate;
+        apiPrices.iqdExchangeRate = iqdRate;
+
+        let overrideApplied = false;
+
+        if (obj.override_gold_21k_iqd_per_gram) {
+          const gold21kIQD = parseFloat(obj.override_gold_21k_iqd_per_gram);
+          apiPrices.usdPerGram21k = gold21kIQD / iqdRate;
+          apiPrices.usdPerGram24k = apiPrices.usdPerGram21k * (24 / 21);
+          apiPrices.usdPerGram18k = apiPrices.usdPerGram21k * (18 / 21);
+          overrideApplied = true;
+        }
+        if (obj.override_silver_iqd_per_gram) {
+          apiPrices.usdPerGramSilver = parseFloat(obj.override_silver_iqd_per_gram) / iqdRate;
+          overrideApplied = true;
+        }
+
+        if (overrideApplied) {
+          return apiPrices;
+        }
+      }
+    } catch (dbError) {
+      console.error("Error reading global gold price overrides from DB:", dbError);
+    }
+  }
+
+  // 2. Second Priority: Fallback to local manager overrides from localStorage if present
   if (typeof window !== 'undefined') {
     const overrideGold21kIQD = localStorage.getItem('override_gold_21k_iqd_per_gram');
     const overrideSilverIQD = localStorage.getItem('override_silver_iqd_per_gram');

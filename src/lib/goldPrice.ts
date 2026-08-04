@@ -31,6 +31,18 @@ export async function getLiveGoldPrices(): Promise<GoldPrices> {
   };
 }
 
+export function pricePerGramForKarat(karat: 18 | 21 | 24, prices: GoldPrices) {
+  if (karat === 24) return prices.usdPerGram24k;
+  if (karat === 21) return prices.usdPerGram21k;
+  return prices.usdPerGram18k;
+}
+
+export function getPricePerMithqal(prices: GoldPrices, karat: 24 | 21 | 18 = 21) {
+  // 1 مثقال == 5 grams
+  const gramPrice = pricePerGramForKarat(karat as any, prices);
+  return gramPrice * 5;
+}
+
 export function calculateFinalPrice(
   weightGrams: number, 
   karat: 18 | 21 | 24, 

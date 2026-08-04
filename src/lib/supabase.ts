@@ -25,6 +25,8 @@ export type Product = {
   imageUrl: string;
   videoUrl?: string;
   inStock: boolean;
+  // metalType added: 'gold' | 'silver' (optional for backward compatibility)
+  metalType?: 'gold' | 'silver';
 };
 
 export const MOCK_PRODUCTS: Product[] = [
@@ -35,6 +37,7 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 21, weightGrams: 25.5, makingChargeUSD: 150,
     imageUrl: "https://images.unsplash.com/photo-1599643478514-4a73229b1fbf?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metalType: 'gold',
   },
   {
     id: "prod_2",
@@ -43,6 +46,7 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 18, weightGrams: 8.2, makingChargeUSD: 85,
     imageUrl: "https://images.unsplash.com/photo-1605100804763-247f67b2548e?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metalType: 'gold',
   },
   {
     id: "prod_3",
@@ -51,6 +55,7 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 24, weightGrams: 40.0, makingChargeUSD: 200,
     imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metalType: 'gold',
   },
   {
     id: "prod_4",
@@ -59,6 +64,7 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 21, weightGrams: 110.5, makingChargeUSD: 600,
     imageUrl: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metalType: 'gold',
   },
   {
     id: "prod_5",
@@ -67,6 +73,7 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 21, weightGrams: 6.5, makingChargeUSD: 60,
     imageUrl: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metalType: 'gold',
   },
   {
     id: "prod_6",
@@ -75,6 +82,7 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 24, weightGrams: 55.0, makingChargeUSD: 350,
     imageUrl: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metalType: 'gold',
   },
 ];
 

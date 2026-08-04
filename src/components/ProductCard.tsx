@@ -1,7 +1,7 @@
 "use client";
 
 import { Product } from "@/lib/supabase";
-import { GoldPrices, calculateFinalPrice, formatCurrency } from "@/lib/goldPrice";
+import { GoldPrices, calculateFinalPrice, formatCurrency, getPricePerMithqal } from "@/lib/goldPrice";
 import { useCartStore } from "@/lib/store";
 import { useLangStore } from "@/lib/langStore";
 import { arabicDict, englishDict } from "@/lib/dictionary";
@@ -19,7 +19,7 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
   const d = lang === "ar" ? arabicDict : englishDict;
 
   let prices = { totalUSD: 0, totalIQD: 0 };
-  if (goldPrices) {
+  if (goldPrices && product.metalType !== 'silver') {
     prices = calculateFinalPrice(product.weightGrams, product.karat, product.makingChargeUSD, goldPrices);
   }
 
@@ -50,14 +50,17 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
         </div>
 
         <div className={styles.priceContainer}>
-          {goldPrices ? (
+          {product.metalType === 'silver' ? (
+            <span className={styles.usdPrice}>{d.loading}</span>
+          ) : (goldPrices ? (
             <>
               <span className={styles.usdPrice}>{formatCurrency(prices.totalUSD, 'USD')}</span>
               <span className={styles.iqdPrice}>{formatCurrency(prices.totalIQD, 'IQD')}</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>مثقال: {goldPrices ? formatCurrency(getPricePerMithqal(goldPrices, product.karat as any), 'USD') : '—'}</span>
             </>
           ) : (
             <span className={styles.usdPrice}>{d.loading}</span>
-          )}
+          ))}
         </div>
 
         <button onClick={handleAddToCart} className={styles.addToCart}>

@@ -1,46 +1,75 @@
-// This handles gold price calculations
+// This handles gold and silver price calculations with manager overrides
 
 export type GoldPrices = {
   usdPerOunce: number;
   usdPerGram24k: number;
   usdPerGram21k: number;
   usdPerGram18k: number;
+  usdPerGramSilver: number;
   iqdExchangeRate: number; 
   lastUpdated: string;
 };
 
+// Mithqal unit is exactly 5 grams
+export const MITHQAL_GRAMS = 5;
+
 export async function getLiveGoldPrices(): Promise<GoldPrices> {
+  let apiPrices: GoldPrices = {
+    usdPerOunce: 2450,
+    usdPerGram24k: 2450 / 31.1035,
+    usdPerGram21k: (2450 / 31.1035) * (21 / 24),
+    usdPerGram18k: (2450 / 31.1035) * (18 / 24),
+    usdPerGramSilver: 28.5 / 31.1035,
+    iqdExchangeRate: 1310,
+    lastUpdated: new Date().toISOString(),
+  };
+
   try {
-    const res = await fetch('/api/gold-price', { next: { revalidate: 3600 } });
+    const res = await fetch('/api/gold-price');
     if (res.ok) {
-      return await res.json();
+      apiPrices = await res.json();
     }
   } catch {
     console.log('Using fallback gold prices');
   }
-  // Fallback
-  const fallbackOunce = 3350;
-  const fallbackGram = fallbackOunce / 31.1035;
-  return {
-    usdPerOunce: fallbackOunce,
-    usdPerGram24k: fallbackGram,
-    usdPerGram21k: fallbackGram * (21 / 24),
-    usdPerGram18k: fallbackGram * (18 / 24),
-    iqdExchangeRate: 1310,
-    lastUpdated: new Date().toISOString(),
-  };
+
+  // Apply manager overrides from localStorage if present on the client side
+  if (typeof window !== 'undefined') {
+    const overrideGold21kIQD = localStorage.getItem('override_gold_21k_iqd_per_gram');
+    const overrideSilverIQD = localStorage.getItem('override_silver_iqd_per_gram');
+    const overrideExchangeRate = localStorage.getItem('override_exchange_rate');
+
+    const iqdRate = overrideExchangeRate ? parseFloat(overrideExchangeRate) : apiPrices.iqdExchangeRate;
+    apiPrices.iqdExchangeRate = iqdRate;
+
+    if (overrideGold21kIQD) {
+      const gold21kIQD = parseFloat(overrideGold21kIQD);
+      apiPrices.usdPerGram21k = gold21kIQD / iqdRate;
+      apiPrices.usdPerGram24k = apiPrices.usdPerGram21k * (24 / 21);
+      apiPrices.usdPerGram18k = apiPrices.usdPerGram21k * (18 / 21);
+    }
+    if (overrideSilverIQD) {
+      apiPrices.usdPerGramSilver = parseFloat(overrideSilverIQD) / iqdRate;
+    }
+  }
+
+  return apiPrices;
 }
 
 export function calculateFinalPrice(
   weightGrams: number, 
   karat: 18 | 21 | 24, 
   makingChargeUSD: number, 
-  prices: GoldPrices
+  prices: GoldPrices,
+  metal: 'gold' | 'silver' = 'gold'
 ) {
   let gramPrice = 0;
-  if (karat === 24) gramPrice = prices.usdPerGram24k;
-  if (karat === 21) gramPrice = prices.usdPerGram21k;
-  if (karat === 18) gramPrice = prices.usdPerGram18k;
+  if (metal === 'silver') {
+    gramPrice = prices.usdPerGramSilver;
+  } else {
+    // We only sell 21 karat gold as per user requirement. If for some reason it's not 21, default to 21.
+    gramPrice = prices.usdPerGram21k;
+  }
 
   const totalUSD = (gramPrice * weightGrams) + makingChargeUSD;
   const totalIQD = totalUSD * prices.iqdExchangeRate;
@@ -53,6 +82,13 @@ export function formatCurrency(amount: number, currency: 'USD' | 'IQD') {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   } else {
     // IQD usually has no decimal places
-    return new Intl.NumberFormat('ar-IQ', { style: 'currency', currency: 'IQD', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat('ar-IQ', { style: 'currency', currency: 'IQD', maximumFractionDigits: 0 }).format(amount)
+      .replace('IQD', 'د.ع')
+      .replace('د.ع.‏', 'د.ع');
   }
+}
+
+// Converts weight in grams to Mithqal (1 Mithqal = 5 Grams)
+export function gramsToMithqal(grams: number): number {
+  return grams / MITHQAL_GRAMS;
 }

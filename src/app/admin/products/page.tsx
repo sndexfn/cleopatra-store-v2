@@ -14,6 +14,7 @@ type Product = {
   imageUrl: string;
   videoUrl?: string;
   inStock: boolean;
+  metal?: 'gold' | 'silver';
 };
 
 export default function AdminProductsPage() {
@@ -27,7 +28,7 @@ export default function AdminProductsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const emptyForm = { name: '', description: '', karat: 21 as 18|21|24, weightGrams: '', makingChargeUSD: '', imageUrl: '', videoUrl: '', inStock: true };
+  const emptyForm = { name: '', description: '', karat: 21 as 18|21|24, weightGrams: '', makingChargeUSD: '', imageUrl: '', videoUrl: '', inStock: true, metal: 'gold' as 'gold' | 'silver' };
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function AdminProductsPage() {
       name: form.name, description: form.description, karat: form.karat,
       weightGrams: parseFloat(form.weightGrams), makingChargeUSD: parseFloat(form.makingChargeUSD),
       imageUrl: form.imageUrl, videoUrl: form.videoUrl || null, inStock: form.inStock,
+      metal: form.metal,
     };
 
     if (supabase) {
@@ -101,7 +103,7 @@ export default function AdminProductsPage() {
 
   const handleEdit = (p: Product) => {
     setEditing(p);
-    setForm({ name: p.name, description: p.description, karat: p.karat, weightGrams: String(p.weightGrams), makingChargeUSD: String(p.makingChargeUSD), imageUrl: p.imageUrl, videoUrl: p.videoUrl || '', inStock: p.inStock });
+    setForm({ name: p.name, description: p.description, karat: p.karat, weightGrams: String(p.weightGrams), makingChargeUSD: String(p.makingChargeUSD), imageUrl: p.imageUrl, videoUrl: p.videoUrl || '', inStock: p.inStock, metal: p.metal || 'gold' });
     setShowForm(true);
   };
 
@@ -134,13 +136,22 @@ export default function AdminProductsPage() {
                   <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="مثال: قلادة كليوباترا" />
                 </div>
                 <div className={styles.field}>
-                  <label>العيار *</label>
-                  <select value={form.karat} onChange={e => setForm(f => ({ ...f, karat: parseInt(e.target.value) as 18|21|24 }))}>
-                    <option value={24}>24 - ذهب خالص</option>
-                    <option value={21}>21 - الأكثر رواجاً</option>
-                    <option value={18}>18 - مقاوم للخدش</option>
+                  <label>المعدن *</label>
+                  <select value={form.metal} onChange={e => setForm(f => ({ ...f, metal: e.target.value as 'gold' | 'silver' }))}>
+                    <option value="gold">ذهب (Gold)</option>
+                    <option value="silver">فضة (Silver)</option>
                   </select>
                 </div>
+                {form.metal === 'gold' && (
+                  <div className={styles.field}>
+                    <label>العيار *</label>
+                    <select value={form.karat} onChange={e => setForm(f => ({ ...f, karat: parseInt(e.target.value) as 18|21|24 }))}>
+                      <option value={21}>21 - الأكثر رواجاً</option>
+                      <option value={24}>24 - ذهب خالص</option>
+                      <option value={18}>18 - مقاوم للخدش</option>
+                    </select>
+                  </div>
+                )}
                 <div className={styles.field}>
                   <label>الوزن (غرام) *</label>
                   <input required type="number" step="0.1" value={form.weightGrams} onChange={e => setForm(f => ({ ...f, weightGrams: e.target.value }))} placeholder="25.5" />
@@ -217,7 +228,11 @@ export default function AdminProductsPage() {
               {p.videoUrl && <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.7)', borderRadius: '4px', padding: '2px 6px', fontSize: '0.7rem', color: '#fff' }}>🎬 فيديو</span>}
               <div className={styles.productInfo}>
                 <h3>{p.name}</h3>
-                <p>عيار {p.karat} | {p.weightGrams}غ | أجرة: ${p.makingChargeUSD}</p>
+                <p>
+                  <span>{p.metal === 'silver' ? 'فضة' : `ذهب عيار ${p.karat}`}</span>
+                  <span> | {p.weightGrams}غ</span>
+                  <span> | أجرة: ${p.makingChargeUSD}</span>
+                </p>
                 <span className={p.inStock ? styles.inStock : styles.outStock}>{p.inStock ? '✅ متاح' : '❌ نفذ'}</span>
               </div>
               <div className={styles.productActions}>

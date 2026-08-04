@@ -61,7 +61,7 @@ export default function LoginPage() {
     <main className={styles.main}>
       <div className={styles.card}>
         <div className={styles.logoWrap}>
-          <Image src="/logo.jpg" alt="كليوباترا" width={100} height={100} style={{ objectFit: 'contain', borderRadius: '12px' }} />
+          <Image src="/logo-new.png" alt="كليوباترا" width={100} height={100} style={{ objectFit: 'contain', borderRadius: '12px' }} />
         </div>
         <h1 className={styles.title}>مرحباً بك</h1>
         <p className={styles.subtitle}>{step === 'email' ? 'أدخل بياناتك لتسجيل الدخول أو إنشاء حساب' : `تم إرسال رمز التحقق إلى ${email}`}</p>

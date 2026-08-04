@@ -71,7 +71,7 @@ export type Dictionary = {
 };
 
 export const arabicDict: Dictionary = {
-  siteTitle: "مجوهرات كليوباترا",
+  siteTitle: "كليوباترا",
   currencyUSD: "$",
   currencyIQD: "د.ع",
   cart: "السلة",
@@ -88,8 +88,8 @@ export const arabicDict: Dictionary = {
   karat21: "عيار 21",
   karat18: "عيار 18",
 
-  heroTitle: "مجوهرات كليوباترا الملكية",
-  heroSubtitle: "اكتشف الفخامة والأناقة الحقيقية. نقدم لك أرقى التصاميم وأصفى عيارات الذهب والفضة في العراق، لتبقى ذكرياتك لامعة مدى الحياة. مجوهرات كليوباترا، حيث يلتقي التراث بالجمال الفرعوني الخالد.",
+  heroTitle: "مجوهرات كليوباترا",
+  heroSubtitle: "اكتشف الفخامة والأناقة الحقيقية. نقدم لك أرقى التصاميم وأصفى عيارات الذهب والفضة في العراق، لتبقى ذكرياتك لامعة مدى الحياة. كليوباترا، حيث يلتقي التراث بالجمال الفرعوني الخالد.",
   shopNow: "تسوقي الآن",
   featuresTitle: "لماذا تختار كليوباترا؟",
   feature1Title: "تسعير لحظي عالمي",
@@ -137,7 +137,7 @@ export const arabicDict: Dictionary = {
 };
 
 export const englishDict: Dictionary = {
-  siteTitle: "Cleopatra Jewelry",
+  siteTitle: "Cleopatra",
   currencyUSD: "$",
   currencyIQD: "IQD",
   cart: "Cart",
@@ -154,8 +154,8 @@ export const englishDict: Dictionary = {
   karat21: "21K",
   karat18: "18K",
 
-  heroTitle: "Royal Cleopatra Jewelry",
-  heroSubtitle: "Discover true luxury and royalty. We offer you the finest designs and the purest gold and silver in Iraq, so your memories shine forever. Cleopatra Jewelry, where heritage meets eternal beauty.",
+  heroTitle: "Cleopatra Jewelry",
+  heroSubtitle: "Discover true luxury and royalty. We offer you the finest designs and the purest gold and silver in Iraq, so your memories shine forever. Cleopatra, where heritage meets eternal beauty.",
   shopNow: "Shop Now",
   featuresTitle: "Why Choose Cleopatra?",
   feature1Title: "Live Global Pricing",

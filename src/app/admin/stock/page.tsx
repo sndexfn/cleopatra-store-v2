@@ -63,8 +63,8 @@ export default function StockPage() {
         <div style={cardStyle('#6366f1')}>
           <TrendingUp size={22} color="#6366f1" />
           <p style={{ color: 'var(--text-muted)', fontSize: '0.83rem' }}>سعر المثقال 21</p>
-          <p style={{ fontSize: '1.5rem', color: '#6366f1', fontWeight: 800 }}>{prices ? formatIQD(prices.iqdPerMithqal21k) : '...'}</p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{prices ? formatUSD(prices.usdPerMithqal21k) : '...'}</p>
+          <p style={{ fontSize: '1.5rem', color: '#6366f1', fontWeight: 800 }}>{prices ? formatIQD(prices.usdPerGram21k * 5 * prices.iqdExchangeRate) : '...'}</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{prices ? formatUSD(prices.usdPerGram21k * 5) : '...'}</p>
         </div>
       </div>
 

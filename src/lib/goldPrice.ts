@@ -128,3 +128,12 @@ export function formatCurrency(amount: number, currency: 'USD' | 'IQD') {
 export function gramsToMithqal(grams: number): number {
   return grams / MITHQAL_GRAMS;
 }
+
+// Convenience aliases
+export function formatUSD(amount: number): string {
+  return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+}
+
+export function formatIQD(amount: number): string {
+  return new Intl.NumberFormat('ar-IQ', { maximumFractionDigits: 0 }).format(amount) + ' د.ع';
+}

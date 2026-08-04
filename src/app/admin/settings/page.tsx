@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { RefreshCw, Save } from "lucide-react";
 
 export default function AdminSettingsPage() {
-  const [settings, setSettings] = useState<any>({});
+  const [settings, setSettings] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [saved, setSaved] = useState(false);
@@ -15,9 +15,9 @@ export default function AdminSettingsPage() {
       if (!supabase) { setFetching(false); return; }
       const { data } = await supabase.from('site_settings').select('*');
       if (data && data.length > 0) {
-        const obj: any = {};
+        const obj: Record<string, any> = {};
         data.forEach((row: any) => { obj[row.key] = row.value; });
-        setSettings(prev => ({ ...prev, ...obj }));
+        setSettings((prev: Record<string, any>) => ({ ...prev, ...obj }));
       }
       setFetching(false);
     }

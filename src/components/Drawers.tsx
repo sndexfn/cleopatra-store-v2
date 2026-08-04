@@ -118,7 +118,7 @@ export default function Drawers() {
                 <span>الإجمالي</span>
                 <span style={{ color: 'var(--gold-primary)', fontWeight: 700 }}>{formatCurrency(grandTotalUSD, 'USD')}</span>
               </div>
-              <button className={styles.checkoutBtn} onClick={() => { closeCart(); openCheckout(); }}>إتمام الشراء ←</button>
+              <button className={styles.checkoutBtn} onClick={() => { closeCart(); router.push('/checkout'); }}>إتمام الشراء ←</button>
             </div>
           )}
         </div>

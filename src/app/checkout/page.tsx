@@ -111,7 +111,8 @@ export default function CheckoutPage() {
           },
           items: items,
           shippingUSD: shippingFeeUSD,
-          grandTotalUSD: grandTotalUSD
+          grandTotalUSD: grandTotalUSD,
+          exchangeRate: exchangeRate
         })
       });
 

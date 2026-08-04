@@ -25,6 +25,7 @@ export type Product = {
   imageUrl: string;
   videoUrl?: string;
   inStock: boolean;
+  metal?: 'gold' | 'silver';
 };
 
 export const MOCK_PRODUCTS: Product[] = [
@@ -35,30 +36,34 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 21, weightGrams: 25.5, makingChargeUSD: 150,
     imageUrl: "https://images.unsplash.com/photo-1599643478514-4a73229b1fbf?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metal: 'gold',
   },
   {
     id: "prod_2",
-    name: "خاتم الألماس والذهب",
-    description: "خاتم عيار 18 مرصع بأحجار كريمة بتصميم إيطالي عصري فاخر.",
-    karat: 18, weightGrams: 8.2, makingChargeUSD: 85,
+    name: "خاتم الفضة النقي",
+    description: "خاتم فضة إيطالي مرصع بأحجار الزركون اللامعة بتصميم ناعم وجذاب.",
+    karat: 21, weightGrams: 8.2, makingChargeUSD: 25,
     imageUrl: "https://images.unsplash.com/photo-1605100804763-247f67b2548e?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metal: 'silver',
   },
   {
     id: "prod_3",
-    name: "سوار الذهب الخالص",
-    description: "سوار عيار 24 غاية في النقاء والبساطة، مناسب للمناسبات الفخمة.",
-    karat: 24, weightGrams: 40.0, makingChargeUSD: 200,
+    name: "سوار الفضة الملكي",
+    description: "سوار فضة منقوش باليد بتفاصيل شرقية فاخرة تناسب كافة الأذواق.",
+    karat: 21, weightGrams: 15.0, makingChargeUSD: 35,
     imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metal: 'silver',
   },
   {
     id: "prod_4",
-    name: "طقم زفاف الزمرد",
+    name: "طقم زفاف الملكة",
     description: "طقم كامل من قلادة وأقراط وخاتم عيار 21 للعروس المميزة.",
     karat: 21, weightGrams: 110.5, makingChargeUSD: 600,
     imageUrl: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metal: 'gold',
   },
   {
     id: "prod_5",
@@ -67,14 +72,16 @@ export const MOCK_PRODUCTS: Product[] = [
     karat: 21, weightGrams: 6.5, makingChargeUSD: 60,
     imageUrl: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metal: 'gold',
   },
   {
     id: "prod_6",
-    name: "سلسلة الذهب الملكية",
-    description: "سلسلة ذهب عيار 24 بتصميم ملكي فاخر، تضفي أناقة لا مثيل لها.",
-    karat: 24, weightGrams: 55.0, makingChargeUSD: 350,
+    name: "قلادة الفضة الناعمة",
+    description: "سلسلة وقلادة فضة بتصميم رقيق وعصري يضفي لمعاناً جميلاً.",
+    karat: 21, weightGrams: 12.0, makingChargeUSD: 18,
     imageUrl: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=800&auto=format&fit=crop",
     inStock: true,
+    metal: 'silver',
   },
 ];
 

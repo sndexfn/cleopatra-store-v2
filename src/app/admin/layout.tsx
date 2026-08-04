@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import styles from "./layout.module.css";
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Settings, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase, isAdmin } from "@/lib/supabase";
@@ -48,6 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', icon: <LayoutDashboard size={18} />, label: 'لوحة التحكم' },
     { href: '/admin/products', icon: <Package size={18} />, label: 'المنتجات' },
     { href: '/admin/orders', icon: <ShoppingCart size={18} />, label: 'الطلبات' },
+    { href: '/admin/workers', icon: <Users size={18} />, label: 'عمال وموظفي المعرض' },
     { href: '/admin/settings', icon: <Settings size={18} />, label: 'إعدادات الموقع' },
   ];
 

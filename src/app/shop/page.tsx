@@ -1,3 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Navbar from "@/components/Navbar";
+import ProductCard from "@/components/ProductCard";
+import { getProducts, Product } from "@/lib/supabase";
+import { getLiveGoldPrices, GoldPrices } from "@/lib/goldPrice";
+import { useLangStore } from "@/lib/langStore";
+import { arabicDict, englishDict } from "@/lib/dictionary";
+import styles from "./page.module.css";
+
+export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [prices, setPrices] = useState<GoldPrices | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,3 +111,21 @@
           </div>
         </div>
 
+        {loading ? (
+          <div className={styles.loadingWrapper}>
+            <div className={styles.loadingSpinner}></div>
+            <p style={{ color: "var(--gold-primary)", fontWeight: 700 }}>{d.loading}</p>
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className={styles.grid}>
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} goldPrices={prices} />
+            ))}
+          </div>
+        ) : (
+          <p className={styles.noProducts}>لا توجد قطع تطابق بحثك حالياً.</p>
+        )}
+      </main>
+    </>
+  );
+}

@@ -1,14 +1,19 @@
 /* ===== CONTAINER — ALWAYS FIXED ===== */
 .navbarContainer {
   position: fixed !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1000 !important;
   direction: rtl;
-  transform: translateZ(0); /* force GPU layer so it never scrolls away */
-  -webkit-transform: translateZ(0);
-  will-change: transform;
+  transform: translate3d(0, 0, 0) !important; /* force GPU layer so it never scrolls away or jitters */
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  will-change: transform !important;
 }
 
 /* ===== TICKER ===== */

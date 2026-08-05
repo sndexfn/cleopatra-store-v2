@@ -6,8 +6,10 @@
   right: 0;
   z-index: 1000;
   direction: rtl;
-  transform: translateZ(0); /* force GPU layer so it never scrolls away */
-  -webkit-transform: translateZ(0);
+  transform: translate3d(0, 0, 0); /* force GPU layer so it never scrolls away */
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   will-change: transform;
 }
 

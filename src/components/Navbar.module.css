@@ -1,13 +1,18 @@
 /* ===== CONTAINER — ALWAYS FIXED ===== */
 .navbarContainer {
   position: fixed !important;
+  position: -webkit-fixed !important; /* iOS support */
   top: 0;
   left: 0;
   right: 0;
+  width: 100%;
   z-index: 1000;
   direction: rtl;
-  transform: translateZ(0); /* force GPU layer so it never scrolls away */
-  -webkit-transform: translateZ(0);
+  /* GPU acceleration & strongest fixed positioning */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   will-change: transform;
 }
 

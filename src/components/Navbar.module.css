@@ -1,6 +1,6 @@
-/* ===== CONTAINER — ALWAYS ABSOLUTE (STATIC ON SCROLL) ===== */
+/* ===== CONTAINER — ALWAYS FIXED (STICKY ON SCROLL) ===== */
 .navbarContainer {
-  position: absolute !important;
+  position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;

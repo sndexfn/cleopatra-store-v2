@@ -22,6 +22,14 @@ export default function Home() {
     'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200&auto=format&fit=crop'
   ]);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [siteStats, setSiteStats] = useState({
+    years: '+50',
+    customers: '+10K',
+    guarantee: '100%',
+    karat: '1',
+    karatLabel: 'أعيار الذهب (21)',
+    story: '',
+  });
 
   useEffect(() => {
     Promise.all([getProducts(), getLiveGoldPrices()]).then(([prods, p]) => {
@@ -74,6 +82,29 @@ export default function Home() {
     }
 
     loadGlobalSlides();
+
+    // Load site settings (stats + story) from Supabase
+    async function loadSiteSettings() {
+      if (!supabase) return;
+      try {
+        const { data } = await supabase.from('site_settings').select('key, value');
+        if (data && data.length > 0) {
+          const get = (key: string, fallback = '') => data.find((r: any) => r.key === key)?.value || fallback;
+          setSiteStats({
+            years: get('stats_years', '+50'),
+            customers: get('stats_customers', '+10K'),
+            guarantee: get('stats_guarantee', '100%'),
+            karat: get('stats_karat_count', '1'),
+            karatLabel: get('stats_karat_label', 'أعيار الذهب (21)'),
+            story: get('story_text', ''),
+          });
+        }
+      } catch (e) {
+        console.error('Error loading site settings', e);
+      }
+    }
+
+    loadSiteSettings();
   }, []);
 
   // Slide transition timer
@@ -217,13 +248,13 @@ export default function Home() {
 
         {/* Stats */}
         <section className={styles.stats}>
-          <div className={styles.statItem}><span className={styles.statNum}>+50</span><span className={styles.statLabel}>{lang === 'ar' ? 'عاماً من الخبرة' : 'Years of Experience'}</span></div>
+          <div className={styles.statItem}><span className={styles.statNum}>{siteStats.years}</span><span className={styles.statLabel}>{lang === 'ar' ? 'عاماً من الخبرة' : 'Years of Experience'}</span></div>
           <div className={styles.statDivider} />
-          <div className={styles.statItem}><span className={styles.statNum}>+10K</span><span className={styles.statLabel}>{lang === 'ar' ? 'زبون سعيد' : 'Happy Customers'}</span></div>
+          <div className={styles.statItem}><span className={styles.statNum}>{siteStats.customers}</span><span className={styles.statLabel}>{lang === 'ar' ? 'زبون سعيد' : 'Happy Customers'}</span></div>
           <div className={styles.statDivider} />
-          <div className={styles.statItem}><span className={styles.statNum}>100%</span><span className={styles.statLabel}>{lang === 'ar' ? 'ذهب أصلي مضمون' : 'Guaranteed Pure Gold'}</span></div>
+          <div className={styles.statItem}><span className={styles.statNum}>{siteStats.guarantee}</span><span className={styles.statLabel}>{lang === 'ar' ? 'ذهب أصلي مضمون' : 'Guaranteed Pure Gold'}</span></div>
           <div className={styles.statDivider} />
-          <div className={styles.statItem}><span className={styles.statNum}>1</span><span className={styles.statLabel}>{lang === 'ar' ? 'أعيار الذهب (21)' : 'Gold Karat (21)'}</span></div>
+          <div className={styles.statItem}><span className={styles.statNum}>{siteStats.karat}</span><span className={styles.statLabel}>{siteStats.karatLabel || (lang === 'ar' ? 'أعيار الذهب (21)' : 'Gold Karat (21)')}</span></div>
         </section>
 
         {/* Featured Products */}

@@ -12,7 +12,7 @@ type SiteSettings = {
 };
 
 const defaultSettings: SiteSettings = {
-  story_text: `تأسس متجر كليوباترا للمجوهرات عام 1975 على يد صاحبه الذي حمل معه حلماً بتقديم أفخر أنواع الذهب والمجوهرات لأبناء العراق. على مدار خمسة عقود، أصبحنا الوجهة الأولى للعائلات والأفراد الباحثين عن الجودة والأصالة.\n\nنلتزم بتقديم ذهب حقيقي بأعيار موثوقة (18، 21، 24) مع شهادات ضمان لكل قطعة، وأسعار شفافة محسوبة وفق سعر الذهب العالمي اللحظي.`,
+  story_text: `تأسس متجر كليوباترا للمجوهرات عام 1975 على يد صاحبه الذي حمل معه حلماً بتقديم أفخر أنواع الذهب والمجوهرات لأبناء العراق. على مدار خمسة عقود، أصبحنا الوجهة الأولى للعائلات والأفراد الباحثين عن الجودة والأصالة.\n\nنلتزم بتقديم ذهب حقيقي باعيار موثوقة (18، 21، 24) مع شهادات ضمان لكل قطعة، وأسعار شفافة محسوبة وفق سعر الذهب العالمي اللحظي.`,
   stats_years: '+50',
   stats_customers: '+10K',
   stats_karat_count: '3',
@@ -352,7 +352,7 @@ export default function AdminSettingsPage() {
             <input style={inputStyle} value={settings.stats_customers} onChange={e => setSettings(s => ({ ...s, stats_customers: e.target.value }))} placeholder="+10K" />
           </div>
           <div>
-            <label style={labelStyle}>عدد الأعيار</label>
+            <label style={labelStyle}>عدد الاعيار</label>
             <input style={inputStyle} value={settings.stats_karat_count} onChange={e => setSettings(s => ({ ...s, stats_karat_count: e.target.value }))} placeholder="3" />
           </div>
         </div>

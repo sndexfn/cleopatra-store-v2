@@ -1,33 +1,43 @@
-/* ===== CONTAINER — ALWAYS FIXED ===== */
+/* ===== THE ONLY CORRECT WAY TO FIX NAVBAR ON iOS SAFARI ===== */
 .navbarContainer {
-  position: fixed !important;
+  /* Use both fixed AND sticky as fallback */
+  position: fixed;
+  position: -webkit-sticky; /* iOS Safari fallback */
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  width: 100%;
+  z-index: 9999;
   direction: rtl;
-  transform: translateZ(0); /* force GPU layer so it never scrolls away */
-  -webkit-transform: translateZ(0);
+  /* Force GPU compositing layer — prevents scroll */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   will-change: transform;
+  /* Ensure it's above everything */
+  isolation: isolate;
 }
 
 /* ===== TICKER ===== */
 .ticker {
   background: linear-gradient(90deg, #060f22, #0d1f3c, #060f22);
   border-bottom: 1px solid rgba(197,168,92,0.2);
-  padding: 0.3rem 1rem;
+  padding: 0.28rem 0.75rem;
   overflow: hidden;
-  white-space: nowrap;
 }
 
 .tickerContent {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  justify-content: center;
-  flex-wrap: nowrap;       /* never wrap — single line always */
+  gap: 1rem;
+  /* Single scrollable line — NEVER column */
+  flex-wrap: nowrap;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  /* Center on desktop, scroll on mobile */
+  justify-content: center;
 }
 .tickerContent::-webkit-scrollbar { display: none; }
 
@@ -35,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
@@ -44,50 +54,47 @@
 .tickerPrice {
   color: var(--gold-primary);
   font-weight: 700;
-  font-size: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .tickerSecondaryPrice {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--text-muted);
   font-weight: normal;
 }
 
 /* ===== MAIN NAV ===== */
 .navbar {
-  background: rgba(3, 7, 18, 0.97);
+  background: rgba(3, 7, 18, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 1.5rem;
 }
 
 .container {
   max-width: var(--container-max);
   margin: 0 auto;
-  height: 60px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  padding: 0 1.25rem;
+  gap: 0.75rem;
 }
 
 .logo { display: flex; align-items: center; flex-shrink: 0; }
-.logoImage { object-fit: contain; height: 48px; width: auto; }
+.logoImage { object-fit: contain; height: 46px; width: auto; }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
 }
-
 .link {
   color: var(--text-secondary);
-  font-size: 0.92rem;
-  padding: 0.45rem 0.8rem;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.75rem;
   border-radius: 8px;
   transition: all 0.2s;
   white-space: nowrap;
@@ -97,14 +104,14 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
 }
 
 .adminBtn {
-  display: flex; align-items: center; gap: 0.35rem;
+  display: flex; align-items: center; gap: 0.3rem;
   background: rgba(197,168,92,0.1); border: 1px solid var(--border-color);
-  color: var(--gold-primary); padding: 0.38rem 0.75rem;
-  border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+  color: var(--gold-primary); padding: 0.35rem 0.65rem;
+  border-radius: 8px; font-size: 0.76rem; font-weight: 600;
   white-space: nowrap; transition: all 0.2s; text-decoration: none;
 }
 .adminBtn:hover { background: rgba(197,168,92,0.2); color: var(--gold-primary); }
@@ -112,74 +119,62 @@
 .cartButton {
   position: relative; background: none;
   border: 1px solid var(--border-color); color: var(--text-secondary);
-  width: 38px; height: 38px; border-radius: 10px;
+  width: 37px; height: 37px; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; cursor: pointer;
+  transition: all 0.2s; cursor: pointer; flex-shrink: 0;
 }
 .cartButton:hover { border-color: var(--gold-primary); color: var(--gold-primary); }
-
 .cartBadge {
   position: absolute; top: -5px; left: -5px;
   background: var(--gold-primary); color: #000;
-  font-size: 0.6rem; font-weight: 800;
-  width: 17px; height: 17px; border-radius: 50%;
+  font-size: 0.58rem; font-weight: 800;
+  width: 16px; height: 16px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
 }
 
 .userMenu {
-  display: flex; align-items: center; gap: 0.35rem;
+  display: flex; align-items: center; gap: 0.3rem;
   background: rgba(197,168,92,0.07); border: 1px solid var(--border-color);
-  border-radius: 10px; padding: 0.28rem 0.6rem;
+  border-radius: 9px; padding: 0.28rem 0.55rem;
 }
 .userName {
-  display: flex; align-items: center; gap: 0.3rem;
-  color: var(--gold-pale); font-size: 0.78rem;
-  max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: flex; align-items: center; gap: 0.28rem;
+  color: var(--gold-pale); font-size: 0.75rem;
+  max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .logoutBtn {
   background: none; border: none; color: #ef4444;
-  padding: 0.15rem; display: flex; align-items: center;
-  cursor: pointer; border-radius: 4px;
+  padding: 0.12rem; display: flex; align-items: center; cursor: pointer; border-radius: 4px;
 }
 .logoutBtn:hover { background: rgba(239,68,68,0.1); }
 
 .loginBtn {
   background: var(--gold-primary); color: #000;
-  padding: 0.42rem 0.9rem; border-radius: 8px;
-  font-size: 0.82rem; font-weight: 700;
-  white-space: nowrap; transition: all 0.2s; text-decoration: none;
+  padding: 0.4rem 0.85rem; border-radius: 8px;
+  font-size: 0.8rem; font-weight: 700;
+  white-space: nowrap; transition: all 0.2s; text-decoration: none; flex-shrink: 0;
 }
 .loginBtn:hover { background: var(--gold-pale); color: #000; }
 
 .menuBtn {
   background: none; border: 1px solid var(--border-color);
-  color: var(--text-secondary); width: 38px; height: 38px;
-  border-radius: 10px; display: flex; align-items: center;
-  justify-content: center; cursor: pointer;
+  color: var(--text-secondary); width: 37px; height: 37px;
+  border-radius: 9px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; flex-shrink: 0;
 }
 .menuBtn:hover { border-color: var(--gold-primary); color: var(--gold-primary); }
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
-  /* Keep ticker as ONE scrollable line — never column */
-  .ticker { padding: 0.28rem 0.75rem; }
-  .tickerContent {
-    justify-content: flex-start;
-    gap: 1rem;
-    /* horizontal scroll on mobile so it stays compact */
-  }
-  .tickerItem { font-size: 0.68rem; }
-  .tickerPrice { font-size: 0.7rem; }
-
   .navLinks { display: none; }
-  .container { height: 56px; }
-  .navbar { padding: 0 0.875rem; }
-  .logoImage { height: 42px; }
+  .container { height: 54px; padding: 0 0.75rem; }
+  .tickerContent { justify-content: flex-start; }
+  .logoImage { height: 40px; }
   .adminBtn span { display: none; }
-  .adminBtn { padding: 0.38rem; }
+  .adminBtn { padding: 0.35rem; }
 }
 
 @media (max-width: 480px) {
   .userMenu { display: none; }
-  .tickerSecondaryPrice { display: none; } /* hide USD on very small screens */
+  .tickerSecondaryPrice { display: none; }
 }

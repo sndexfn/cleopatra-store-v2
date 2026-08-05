@@ -27,7 +27,7 @@ export default function Home() {
     customers: '+10K',
     guarantee: '100%',
     karat: '1',
-    karatLabel: 'أعيار الذهب (21)',
+    karatLabel: 'عيار الذهب (21)',
     story: '',
   });
 
@@ -95,7 +95,7 @@ export default function Home() {
             customers: get('stats_customers', '+10K'),
             guarantee: get('stats_guarantee', '100%'),
             karat: get('stats_karat_count', '1'),
-            karatLabel: get('stats_karat_label', 'أعيار الذهب (21)'),
+            karatLabel: get('stats_karat_label', 'عيار الذهب (21)'),
             story: get('story_text', ''),
           });
         }
@@ -254,7 +254,7 @@ export default function Home() {
           <div className={styles.statDivider} />
           <div className={styles.statItem}><span className={styles.statNum}>{siteStats.guarantee}</span><span className={styles.statLabel}>{lang === 'ar' ? 'ذهب أصلي مضمون' : 'Guaranteed Pure Gold'}</span></div>
           <div className={styles.statDivider} />
-          <div className={styles.statItem}><span className={styles.statNum}>{siteStats.karat}</span><span className={styles.statLabel}>{siteStats.karatLabel || (lang === 'ar' ? 'أعيار الذهب (21)' : 'Gold Karat (21)')}</span></div>
+          <div className={styles.statItem}><span className={styles.statNum}>{siteStats.karat}</span><span className={styles.statLabel}>{siteStats.karatLabel || (lang === 'ar' ? 'عيار الذهب (21)' : 'Gold Karat (21)')}</span></div>
         </section>
 
         {/* Featured Products */}

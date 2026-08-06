@@ -89,7 +89,9 @@ export async function getProducts(): Promise<Product[]> {
   if (!supabase) return MOCK_PRODUCTS;
   try {
     const { data, error } = await supabase.from('products').select('*').eq('inStock', true).order('created_at', { ascending: false });
-    if (error || !data || data.length === 0) return MOCK_PRODUCTS;
+    if (error || !data) return MOCK_PRODUCTS;
+    // When Supabase is connected and successfully queried, return the real array (even if empty)
+    // so the manager can start fresh with their own products.
     return data as Product[];
   } catch {
     return MOCK_PRODUCTS;

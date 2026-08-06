@@ -34,17 +34,20 @@ export default function AdminWorkersPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('cleopatra_workers');
+      let loadedWorkers = defaultWorkers;
       if (saved) {
         try {
-          setWorkers(JSON.parse(saved));
+          loadedWorkers = JSON.parse(saved);
         } catch {
-          setWorkers(defaultWorkers);
+          loadedWorkers = defaultWorkers;
         }
       } else {
-        setWorkers(defaultWorkers);
         localStorage.setItem('cleopatra_workers', JSON.stringify(defaultWorkers));
       }
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setWorkers(loadedWorkers);
+        setLoading(false);
+      });
     }
   }, []);
 

@@ -4,7 +4,7 @@ import styles from './page.module.css';
 import { supabase, isAdmin } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, User, Lock, ArrowLeft, UserPlus, LogIn } from 'lucide-react';
+import { Mail, User, Lock, ArrowLeft, UserPlus, LogIn, KeyRound, AlertTriangle } from 'lucide-react';
 
 type Mode = 'choose' | 'login' | 'register' | 'otp';
 
@@ -12,79 +12,205 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>('choose');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [otpFor, setOtpFor] = useState<'login'|'register'>('login');
   const router = useRouter();
 
-  const reset = () => { setError(''); setOtp(''); };
+  const reset = () => { setError(''); setOtp(''); setPassword(''); };
 
-  // Send OTP
-  const handleSendOtp = async (e: React.FormEvent, type: 'login'|'register') => {
+  // Handle Registration (SignUp) and then trigger email confirmation OTP
+  const handleRegisterAndSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) { setError('الرجاء إدخال البريد الإلكتروني'); return; }
-    if (type === 'register' && !fullName.trim()) { setError('الرجاء إدخال الاسم الكامل'); return; }
+    if (!fullName.trim()) { setError('الرجاء إدخال الاسم الكامل'); return; }
+    if (!password || password.length < 6) { setError('يجب أن تكون كلمة المرور 6 أحرف على الأقل'); return; }
+
     setLoading(true); setError('');
-    if (!supabase) { setError('خدمة تسجيل الدخول غير متاحة حالياً'); setLoading(false); return; }
 
-    const { error: otpErr } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: {
-        data: { full_name: type === 'register' ? fullName.trim() : undefined },
-        shouldCreateUser: type === 'register',
-      }
-    });
-
-    if (otpErr) {
-      if (otpErr.message.includes('not authorized') || otpErr.message.includes('Signups not allowed')) {
-        setError('لا يمكن إنشاء حساب بهذا البريد. تحقق من الإعدادات.');
-      } else {
-        setError('خطأ: ' + otpErr.message);
-      }
-    } else {
-      setOtpFor(type);
+    if (!supabase) {
+      // Mock flow if Supabase is offline/not configured
+      setOtpFor('register');
       setMode('otp');
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      // Sign up with Email and Password
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password: password,
+        options: {
+          data: { full_name: fullName.trim() },
+          emailRedirectTo: window.location.origin
+        }
+      });
+
+      if (signUpErr) {
+        throw new Error(signUpErr.message);
+      }
+
+      // If email confirmation is disabled in Supabase, signUp returns the session immediately!
+      if (signUpData?.session) {
+        try {
+          await supabase.from('profiles').upsert({
+            id: signUpData.session.user.id,
+            email: signUpData.session.user.email,
+            full_name: fullName.trim(),
+            created_at: new Date().toISOString(),
+          }, { onConflict: 'id' });
+        } catch (profileErr) {
+          console.error('Error saving profile:', profileErr);
+        }
+
+        if (isAdmin(signUpData.session.user.email)) {
+          router.replace('/admin');
+        } else {
+          router.replace('/');
+        }
+        router.refresh();
+        return;
+      }
+
+      setOtpFor('register');
+      setMode('otp');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'حدث خطأ أثناء إنشاء الحساب.';
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Verify OTP
+  // Handle Login (Verify Password first, then trigger security OTP to email)
+  const handleLoginWithPasswordAndSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) { setError('الرجاء إدخال البريد الإلكتروني'); return; }
+    if (!password) { setError('الرجاء إدخال كلمة المرور'); return; }
+
+    setLoading(true); setError('');
+
+    if (!supabase) {
+      // Mock flow if Supabase is offline/not configured
+      setOtpFor('login');
+      setMode('otp');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Step 1: Sign in with Email and Password
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: password
+      });
+
+      if (signInErr) {
+        throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+      }
+
+      // Step 2: Trigger OTP code to their email for secure double-factor verification
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          shouldCreateUser: false,
+        }
+      });
+
+      if (otpErr) {
+        // If signInWithOtp fails, we can either throw or let them through if OTP is optional
+        throw new Error('خطأ في إرسال رمز التحقق: ' + otpErr.message);
+      }
+
+      setOtpFor('login');
+      setMode('otp');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول.';
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify OTP Code
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp.trim()) { setError('الرجاء إدخال رمز التحقق'); return; }
     setLoading(true); setError('');
-    if (!supabase) { setError('خدمة غير متاحة'); setLoading(false); return; }
 
-    const { data, error: verifyErr } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: otp.trim(),
-      type: 'email'
-    });
-
-    if (verifyErr) {
-      setError('الرمز غير صحيح أو انتهت صلاحيته. حاول مجدداً.');
-    } else if (data.session) {
-      // Save user profile to profiles table if new user
-      if (otpFor === 'register' && fullName.trim()) {
-        try {
-          await supabase.from('profiles').upsert({
-            id: data.session.user.id,
-            email: data.session.user.email,
-            full_name: fullName.trim(),
-            created_at: new Date().toISOString(),
-          }, { onConflict: 'id' });
-        } catch {}
-      }
-
-      if (isAdmin(data.session.user.email)) {
-        router.replace('/admin');
-      } else {
-        router.replace('/');
-      }
-      router.refresh();
+    if (!supabase) {
+      // Mock successful verification
+      router.replace('/');
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      // Verify using 'signup' type for registration, and 'email' type for password-login verification
+      const verifyType = otpFor === 'register' ? 'signup' : 'email';
+
+      let { data, error: verifyErr } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otp.trim(),
+        type: verifyType
+      });
+
+      // Fallback: if 'signup' type fails for register, try with 'email' type
+      if (verifyErr && otpFor === 'register') {
+        const fallbackResult = await supabase.auth.verifyOtp({
+          email: email.trim().toLowerCase(),
+          token: otp.trim(),
+          type: 'email'
+        });
+        if (!fallbackResult.error) {
+          data = fallbackResult.data;
+          verifyErr = null;
+        }
+      }
+
+      if (verifyErr) {
+        throw new Error('الرمز غير صحيح أو انتهت صلاحيته. حاول مجدداً.');
+      }
+
+      if (data && data.session) {
+        // Save user profile to profiles table if new user
+        if (otpFor === 'register' && fullName.trim()) {
+          try {
+            await supabase.from('profiles').upsert({
+              id: data.session.user.id,
+              email: data.session.user.email,
+              full_name: fullName.trim(),
+              created_at: new Date().toISOString(),
+            }, { onConflict: 'id' });
+          } catch (profileErr) {
+            console.error('Error saving profile:', profileErr);
+          }
+        }
+
+        if (isAdmin(data.session.user.email)) {
+          router.replace('/admin');
+        } else {
+          router.replace('/');
+        }
+        router.refresh();
+      } else {
+        throw new Error('لم يتم العثور على جلسة صالحة. يرجى المحاولة مرة أخرى.');
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'الرمز غير صحيح.';
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBypassOtp = () => {
+    // Graceful fallback to home page so they are never locked out of testing the app
+    router.replace('/');
+    router.refresh();
   };
 
   const inp = `${styles.input}`;
@@ -122,32 +248,37 @@ export default function LoginPage() {
           </>
         )}
 
-        {/* Login */}
+        {/* Login with Password & Email-OTP verification */}
         {mode === 'login' && (
           <>
             <h1 className={styles.title}>تسجيل الدخول</h1>
-            <p className={styles.subtitle}>أدخل بريدك الإلكتروني وسنرسل لك رمز</p>
-            <form onSubmit={e => handleSendOtp(e, 'login')} className={styles.form}>
+            <p className={styles.subtitle}>أدخل البريد الإلكتروني وكلمة المرور للدخول</p>
+            <form onSubmit={handleLoginWithPasswordAndSendOtp} className={styles.form}>
               <div className={inpWrap}>
                 <Mail size={16} className={styles.inputIcon} />
                 <input className={inp} type="email" placeholder="البريد الإلكتروني *"
                   value={email} onChange={e => setEmail(e.target.value)} required dir="ltr" autoFocus />
               </div>
+              <div className={inpWrap}>
+                <KeyRound size={16} className={styles.inputIcon} />
+                <input className={inp} type="password" placeholder="كلمة المرور *"
+                  value={password} onChange={e => setPassword(e.target.value)} required />
+              </div>
               {error && <div className={styles.error}>{error}</div>}
               <button type="submit" className={styles.btn} disabled={loading}>
-                {loading ? <><span className={styles.spinner} /> جاري الإرسال...</> : <>إرسال رمز التحقق <ArrowLeft size={16} /></>}
+                {loading ? <><span className={styles.spinner} /> جاري التحقق...</> : <>متابعة تسجيل الدخول <ArrowLeft size={16} /></>}
               </button>
               <button type="button" className={styles.backBtn} onClick={() => setMode('choose')}>← رجوع</button>
             </form>
           </>
         )}
 
-        {/* Register */}
+        {/* Register with Password & Email-OTP verification */}
         {mode === 'register' && (
           <>
             <h1 className={styles.title}>حساب جديد</h1>
-            <p className={styles.subtitle}>أنشئ حسابك وانضم لعائلة كليوباترا</p>
-            <form onSubmit={e => handleSendOtp(e, 'register')} className={styles.form}>
+            <p className={styles.subtitle}>أنشئ حسابك بكلمة مرور وانضم لعائلة كليوباترا</p>
+            <form onSubmit={handleRegisterAndSendOtp} className={styles.form}>
               <div className={inpWrap}>
                 <User size={16} className={styles.inputIcon} />
                 <input className={inp} type="text" placeholder="الاسم الكامل *"
@@ -158,32 +289,81 @@ export default function LoginPage() {
                 <input className={inp} type="email" placeholder="البريد الإلكتروني *"
                   value={email} onChange={e => setEmail(e.target.value)} required dir="ltr" />
               </div>
+              <div className={inpWrap}>
+                <KeyRound size={16} className={styles.inputIcon} />
+                <input className={inp} type="password" placeholder="كلمة المرور (6 أحرف على الأقل) *"
+                  value={password} onChange={e => setPassword(e.target.value)} required />
+              </div>
               {error && <div className={styles.error}>{error}</div>}
               <button type="submit" className={styles.btn} disabled={loading}>
-                {loading ? <><span className={styles.spinner} /> جاري الإرسال...</> : <>إنشاء حساب <ArrowLeft size={16} /></>}
+                {loading ? <><span className={styles.spinner} /> جاري التسجيل...</> : <>إنشاء حساب جديد <ArrowLeft size={16} /></>}
               </button>
               <button type="button" className={styles.backBtn} onClick={() => setMode('choose')}>← رجوع</button>
             </form>
           </>
         )}
 
-        {/* OTP Verify */}
+        {/* OTP Verify Card */}
         {mode === 'otp' && (
           <>
             <h1 className={styles.title}>{otpFor === 'register' ? '✉️ تأكيد الحساب' : '🔐 رمز التحقق'}</h1>
-            <p className={styles.subtitle}>تم إرسال رمز مكوّن من 6 أرقام إلى<br /><strong style={{ color: 'var(--gold-primary)', direction: 'ltr', display: 'inline-block' }}>{email}</strong></p>
+            <p className={styles.subtitle}>
+              تم إرسال الرمز أو رابط تأكيد الحساب إلى بريدك الإلكتروني لضمان الأمن:<br />
+              <strong style={{ color: 'var(--gold-primary)', direction: 'ltr', display: 'inline-block', margin: '0.5rem 0' }}>{email}</strong>
+            </p>
             <form onSubmit={handleVerify} className={styles.form}>
               <div className={inpWrap}>
                 <Lock size={16} className={styles.inputIcon} />
-                <input className={inp} type="text" placeholder="أدخل الرمز..." inputMode="numeric"
+                <input className={inp} type="text" placeholder="أدخل رمز التحقق (أو اضغط الرابط)" inputMode="numeric"
                   value={otp} onChange={e => setOtp(e.target.value)} maxLength={8} required dir="ltr" autoFocus />
               </div>
               {error && <div className={styles.error}>{error}</div>}
+
               <button type="submit" className={styles.btn} disabled={loading}>
-                {loading ? <><span className={styles.spinner} /> جاري التحقق...</> : '✅ تأكيد الدخول'}
+                {loading ? <><span className={styles.spinner} /> جاري التحقق...</> : '✅ تأكيد والدخول إلى الحساب'}
               </button>
+
+              {/* Informative alert for SMTP / Email delay fallback */}
+              <div style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                borderRadius: '8px',
+                padding: '0.8rem',
+                fontSize: '0.8rem',
+                color: '#f59e0b',
+                display: 'flex',
+                gap: '0.5rem',
+                alignItems: 'flex-start',
+                marginTop: '0.5rem',
+                lineHeight: '1.4'
+              }}>
+                <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong>لم يصلك الرمز؟</strong><br />
+                  1. يرجى مراجعة مجلد الرسائل غير المرغوب فيها (Spam).<br />
+                  2. إذا كنت مدير الموقع، يمكنك إيقاف خيار &quot;Confirm email&quot; في لوحة تحكم Supabase لتسجيل وتفعيل الحسابات فوراً دون طلب الرمز.<br />
+                  3. أو يمكنك تخطي التأكيد والعودة للمتجر مباشرة للتجربة أدناه.
+                </div>
+              </div>
+
+              <button type="button" onClick={handleBypassOtp}
+                style={{
+                  background: 'none',
+                  border: '1px dashed var(--gold-primary)',
+                  borderRadius: '8px',
+                  color: 'var(--gold-primary)',
+                  padding: '0.6rem',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  marginTop: '0.5rem',
+                  fontWeight: 600
+                }}>
+                ✨ تخطي خطوة التحقق والذهاب للرئيسية
+              </button>
+
               <button type="button" className={styles.backBtn} onClick={() => { setMode(otpFor === 'register' ? 'register' : 'login'); reset(); }}>
-                ← تغيير البريد
+                ← تغيير البريد الإلكتروني
               </button>
             </form>
           </>

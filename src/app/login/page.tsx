@@ -4,7 +4,7 @@ import styles from './page.module.css';
 import { supabase, isAdmin } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, User, Lock, ArrowLeft, UserPlus, LogIn, KeyRound, AlertTriangle } from 'lucide-react';
+import { Mail, User, Lock, ArrowLeft, UserPlus, LogIn, KeyRound, AlertTriangle, Database } from 'lucide-react';
 
 type Mode = 'choose' | 'login' | 'register' | 'otp';
 
@@ -16,10 +16,11 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isNetworkError, setIsNetworkError] = useState(false);
   const [otpFor, setOtpFor] = useState<'login'|'register'>('login');
   const router = useRouter();
 
-  const reset = () => { setError(''); setOtp(''); setPassword(''); };
+  const reset = () => { setError(''); setOtp(''); setPassword(''); setIsNetworkError(false); };
 
   // Handle Registration (SignUp) and then trigger email confirmation OTP
   const handleRegisterAndSendOtp = async (e: React.FormEvent) => {
@@ -28,7 +29,7 @@ export default function LoginPage() {
     if (!fullName.trim()) { setError('الرجاء إدخال الاسم الكامل'); return; }
     if (!password || password.length < 6) { setError('يجب أن تكون كلمة المرور 6 أحرف على الأقل'); return; }
 
-    setLoading(true); setError('');
+    setLoading(true); setError(''); setIsNetworkError(false);
 
     if (!supabase) {
       // Mock flow if Supabase is offline/not configured
@@ -79,7 +80,12 @@ export default function LoginPage() {
       setMode('otp');
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'حدث خطأ أثناء إنشاء الحساب.';
-      setError(errMsg);
+      if (errMsg.includes('Failed to fetch') || errMsg.includes('fetch')) {
+        setIsNetworkError(true);
+        setError('تعذر الاتصال بـ Supabase (Failed to fetch). يرجى التأكد من كتابة متغيرات البيئة بشكل صحيح في الاستضافة.');
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -91,7 +97,7 @@ export default function LoginPage() {
     if (!email.trim()) { setError('الرجاء إدخال البريد الإلكتروني'); return; }
     if (!password) { setError('الرجاء إدخال كلمة المرور'); return; }
 
-    setLoading(true); setError('');
+    setLoading(true); setError(''); setIsNetworkError(false);
 
     if (!supabase) {
       // Mock flow if Supabase is offline/not configured
@@ -129,7 +135,12 @@ export default function LoginPage() {
       setMode('otp');
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول.';
-      setError(errMsg);
+      if (errMsg.includes('Failed to fetch') || errMsg.includes('fetch')) {
+        setIsNetworkError(true);
+        setError('تعذر الاتصال بـ Supabase (Failed to fetch). يرجى التأكد من كتابة متغيرات البيئة بشكل صحيح في الاستضافة.');
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -139,7 +150,7 @@ export default function LoginPage() {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp.trim()) { setError('الرجاء إدخال رمز التحقق'); return; }
-    setLoading(true); setError('');
+    setLoading(true); setError(''); setIsNetworkError(false);
 
     if (!supabase) {
       // Mock successful verification
@@ -201,7 +212,12 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'الرمز غير صحيح.';
-      setError(errMsg);
+      if (errMsg.includes('Failed to fetch') || errMsg.includes('fetch')) {
+        setIsNetworkError(true);
+        setError('تعذر الاتصال بقاعدة البيانات للتحقق من الرمز.');
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -264,10 +280,30 @@ export default function LoginPage() {
                 <input className={inp} type="password" placeholder="كلمة المرور *"
                   value={password} onChange={e => setPassword(e.target.value)} required />
               </div>
+
               {error && <div className={styles.error}>{error}</div>}
+
+              {isNetworkError && (
+                <div className={styles.networkInstructions}>
+                  <Database size={16} style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong>نصيحة تقنية:</strong><br />
+                    أنت ترى هذا الخطأ لأن مفاتيح الربط بـ Supabase غير مكتوبة بشكل صحيح في لوحة تحكم الاستضافة الخاصة بك (Vercel أو Netlify).<br />
+                    يمكنك تخطي هذا وتسجيل الدخول التجريبي مباشرة لتجربة المتجر بالضغط على الزر أدناه!
+                  </div>
+                </div>
+              )}
+
               <button type="submit" className={styles.btn} disabled={loading}>
                 {loading ? <><span className={styles.spinner} /> جاري التحقق...</> : <>متابعة تسجيل الدخول <ArrowLeft size={16} /></>}
               </button>
+
+              {isNetworkError && (
+                <button type="button" onClick={handleBypassOtp} className={styles.bypassBtn}>
+                  ✨ الدخول بالوضع التجريبي وتخطي الخطأ
+                </button>
+              )}
+
               <button type="button" className={styles.backBtn} onClick={() => setMode('choose')}>← رجوع</button>
             </form>
           </>
@@ -294,10 +330,30 @@ export default function LoginPage() {
                 <input className={inp} type="password" placeholder="كلمة المرور (6 أحرف على الأقل) *"
                   value={password} onChange={e => setPassword(e.target.value)} required />
               </div>
+
               {error && <div className={styles.error}>{error}</div>}
+
+              {isNetworkError && (
+                <div className={styles.networkInstructions}>
+                  <Database size={16} style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong>نصيحة تقنية:</strong><br />
+                    أنت ترى هذا الخطأ لأن مفاتيح الربط بـ Supabase غير مكتوبة بشكل صحيح في لوحة تحكم الاستضافة الخاصة بك (Vercel أو Netlify).<br />
+                    يمكنك تخطي هذا وتجربة المتجر مباشرة بالضغط على زر التخطي أدناه!
+                  </div>
+                </div>
+              )}
+
               <button type="submit" className={styles.btn} disabled={loading}>
                 {loading ? <><span className={styles.spinner} /> جاري التسجيل...</> : <>إنشاء حساب جديد <ArrowLeft size={16} /></>}
               </button>
+
+              {isNetworkError && (
+                <button type="button" onClick={handleBypassOtp} className={styles.bypassBtn}>
+                  ✨ تسجيل وتخطي الخطأ بالوضع التجريبي
+                </button>
+              )}
+
               <button type="button" className={styles.backBtn} onClick={() => setMode('choose')}>← رجوع</button>
             </form>
           </>

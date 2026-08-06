@@ -267,10 +267,12 @@ export default function Home() {
             <div className={styles.productsGrid}>
               {featuredProducts.map(p => {
                 const final = prices ? calculateFinalPrice(p.weightGrams, p.karat, p.makingChargeUSD, prices, p.metal) : { totalUSD: 0, totalIQD: 0 };
+                const pImages = p.imageUrl ? p.imageUrl.split(',').map(s => s.trim()).filter(Boolean) : [];
+                const mainImg = pImages[0] || '/logo.jpg';
                 return (
                   <div key={p.id} className={styles.productCard}>
                     <div className={styles.productImgWrap}>
-                      <img src={p.imageUrl} alt={p.name} className={styles.productImg} />
+                      <img src={mainImg} alt={p.name} className={styles.productImg} onError={e => { (e.target as HTMLImageElement).src = '/logo.jpg'; }} />
                       <span className={styles.karatBadge}>{p.metal === 'silver' ? (lang === 'ar' ? 'فضة نقية' : 'Pure Silver') : `${d.karat} ${p.karat}`}</span>
                     </div>
                     <div className={styles.productBody}>

@@ -57,9 +57,11 @@ export default function CartPage() {
                   itemTotalUSD = itemPrice.totalUSD;
                 }
 
+                const cartItemImages = item.product.imageUrl ? item.product.imageUrl.split(',').map(s => s.trim()).filter(Boolean) : [];
+                const displayImg = cartItemImages[0] || '/logo.jpg';
                 return (
                   <div key={item.product.id} className={styles.cartItem}>
-                    <img src={item.product.imageUrl} alt={item.product.name} className={styles.itemImage} />
+                    <img src={displayImg} alt={item.product.name} className={styles.itemImage} onError={e => { (e.target as HTMLImageElement).src = '/logo.jpg'; }} />
                     <div className={styles.itemDetails}>
                       <h3 className={styles.itemName}>{item.product.name}</h3>
                       <p className={styles.itemMeta}>عيار {item.product.karat} | {item.product.weightGrams}غرام</p>

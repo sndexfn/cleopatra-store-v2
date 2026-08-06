@@ -2,31 +2,26 @@
 import { useEffect, useState } from 'react';
 import { supabase, getProducts, Product } from '@/lib/supabase';
 import Link from 'next/link';
-import { Package, ShoppingCart, Settings, TrendingUp, Scale, Coins, ShieldCheck, Users } from 'lucide-react';
-import { gramsToMithqal, formatCurrency } from '@/lib/goldPrice';
+import { Package, ShoppingCart, Settings, TrendingUp, Scale, Coins, ShieldCheck, Users, Landmark, ChevronLeft } from 'lucide-react';
+import { formatCurrency } from '@/lib/goldPrice';
 
 export default function AdminPage() {
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
-    goldGrams: 0,
-    goldMithqals: 0,
-    silverGrams: 0,
-    totalGoldMakingUSD: 0,
-    totalSilverMakingUSD: 0,
-    inStockCount: 0,
-    outOfStockCount: 0
+    totalWorkers: 0,
+    lastUpdate: '...'
   });
 
   useEffect(() => {
     async function fetchStats() {
       let productsList: Product[] = [];
       let ordersCount = 0;
+      let workersCount = 3; // Fallback to length of default workers array
 
       // 1. Fetch products
       try {
         productsList = await getProducts();
-        // Since getProducts might only return active/inStock items, let's try getting all products if supabase is ready
         if (supabase) {
           const { data } = await supabase.from('products').select('*');
           if (data && data.length > 0) {
@@ -34,7 +29,7 @@ export default function AdminPage() {
           }
         }
       } catch (e) {
-        console.error("Error fetching admin products list", e);
+        console.error("Error fetching admin page products list", e);
       }
 
       // 2. Fetch orders count
@@ -43,179 +38,160 @@ export default function AdminPage() {
           const { count } = await supabase.from('orders').select('*', { count: 'exact', head: true });
           ordersCount = count || 0;
         } else {
-          ordersCount = 3; // Mock orders count
+          ordersCount = 5; // Mock orders count
         }
       } catch (e) {
         console.error("Error fetching admin orders count", e);
       }
 
-      // 3. Perform calculations
-      let goldGrams = 0;
-      let silverGrams = 0;
-      let totalGoldMakingUSD = 0;
-      let totalSilverMakingUSD = 0;
-      let inStockCount = 0;
-      let outOfStockCount = 0;
-
-      productsList.forEach(p => {
-        if (p.inStock) {
-          inStockCount++;
-        } else {
-          outOfStockCount++;
+      // 3. Fetch workers count
+      try {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('cleopatra_workers');
+          if (saved) {
+            const workers = JSON.parse(saved);
+            workersCount = workers.length;
+          }
         }
-
-        const metal = p.metal || 'gold';
-        if (metal === 'silver') {
-          silverGrams += p.weightGrams;
-          totalSilverMakingUSD += p.makingChargeUSD;
-        } else {
-          goldGrams += p.weightGrams;
-          totalGoldMakingUSD += p.makingChargeUSD;
-        }
-      });
+      } catch (e) {
+        console.error("Error parsing admin workers count", e);
+      }
 
       setStats({
         totalProducts: productsList.length,
         totalOrders: ordersCount,
-        goldGrams,
-        goldMithqals: gramsToMithqal(goldGrams),
-        silverGrams,
-        totalGoldMakingUSD,
-        totalSilverMakingUSD,
-        inStockCount,
-        outOfStockCount
+        totalWorkers: workersCount,
+        lastUpdate: new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })
       });
     }
 
     fetchStats();
   }, []);
 
-  const cards = [
-    { label: 'المنتجات المسجلة', value: stats.totalProducts, icon: <Package size={28} />, href: '/admin/products', color: 'var(--gold-primary)' },
-    { label: 'إجمالي الطلبات المستلمة', value: stats.totalOrders, icon: <ShoppingCart size={28} />, href: '/admin/orders', color: '#10b981' },
-    { label: 'إعدادات المنصة', value: '✏️', icon: <Settings size={28} />, href: '/admin/settings', color: '#6366f1' },
+  const menuSections = [
+    {
+      label: 'إدارة الكتالوج والمنتجات',
+      desc: 'إضافة المنتجات، تعديل الأوزان، ورفع صور متعددة وفيديوهات بدقة عالية.',
+      count: stats.totalProducts,
+      countLabel: 'منتج مسجل',
+      icon: <Package size={26} />,
+      href: '/admin/products',
+      color: 'var(--gold-primary)'
+    },
+    {
+      label: 'الطلبات المستلمة والفواتير',
+      desc: 'متابعة طلبات الشراء من زبائن الموقع الإلكتروني وتحديث حالتها خطوة بخطوة.',
+      count: stats.totalOrders,
+      countLabel: 'طلب مسجل',
+      icon: <ShoppingCart size={26} />,
+      href: '/admin/orders',
+      color: '#10b981'
+    },
+    {
+      label: 'صندوق الخزينة وجرد المخزون',
+      desc: 'التقرير المالي المتكامل للذهب والفضة، وحساب الخزنة اليدوية بالدينار والدولار في مكان واحد.',
+      count: 'عرض الجرد',
+      countLabel: 'مخزون ومالية',
+      icon: <Landmark size={26} />,
+      href: '/admin/stock',
+      color: '#6366f1'
+    },
+    {
+      label: 'طاقم وعمال كليوباترا',
+      desc: 'مراقبة حضور موظفي المعرض، ساعات العمل، وإدارة المرتبات الشهرية.',
+      count: stats.totalWorkers,
+      countLabel: 'موظفين',
+      icon: <Users size={26} />,
+      href: '/admin/workers',
+      color: '#cbd5e1'
+    },
+    {
+      label: 'إعدادات المنصة وهويتها',
+      desc: 'تخصيص اسم المتجر، روابط إنستغرام، أرقام واتساب، وربط بوت الإشعارات التلقائية للتليغرام.',
+      count: 'تعديل',
+      countLabel: 'تخصيص شامل',
+      icon: <Settings size={26} />,
+      href: '/admin/settings',
+      color: '#f59e0b'
+    },
   ];
-
-  const sectionHeaderStyle = {
-    fontSize: '1.2rem',
-    color: 'var(--gold-pale)',
-    borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '0.5rem',
-    marginBottom: '1rem',
-    fontWeight: 700,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem'
-  };
-
-  const statItemStyle = {
-    background: 'rgba(255, 255, 255, 0.02)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '10px',
-    padding: '1.25rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.25rem'
-  };
 
   return (
     <div style={{ direction: 'rtl' }}>
-      <h1 style={{ fontSize: '2.2rem', color: 'var(--gold-pale)', marginBottom: '0.5rem', fontWeight: 800 }}>مرحباً بك، مدير كليوباترا 👑</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>لوحة التحكم وإدارة المخزون المالي والأوزان للذهب والفضة</p>
+      {/* Welcome Heading Banner */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <h1 style={{ fontSize: '2rem', color: 'var(--gold-pale)', marginBottom: '0.4rem', fontWeight: 800 }}>
+          مرحباً بك، مدير كليوباترا 👑
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+          لوحة التحكم الإدارية المتكاملة لمعرض ومجوهرات كليوباترا (كربلاء، العراق). آخر فحص للمؤشرات: اليوم الساعة {stats.lastUpdate}
+        </p>
+      </div>
 
-      {/* Main Stats Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-        {cards.map(card => (
-          <Link key={card.href} href={card.href} style={{ textDecoration: 'none' }}>
-            <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: '1rem' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = card.color)}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-color)')}>
-              <div style={{ color: card.color }}>{card.icon}</div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{card.label}</p>
-              <p style={{ fontSize: '2.2rem', color: card.color, fontWeight: 700 }}>{card.value}</p>
+      {/* Main Dashboard Navigation Grid */}
+      <h2 style={{ fontSize: '1.2rem', color: 'var(--gold-pale)', marginBottom: '1.25rem', fontWeight: 700 }}>
+        📂 الأقسام الإدارية والعمليات الإدارية السريعة
+      </h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+        {menuSections.map(sec => (
+          <Link key={sec.href} href={sec.href} style={{ textDecoration: 'none' }}>
+            <div
+              style={{
+                background: 'var(--bg-card)',
+                padding: '1.75rem',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                height: '100%',
+                boxSizing: 'border-box'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = sec.color;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = `0 6px 20px rgba(0,0,0,0.3)`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border-color)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <div style={{ color: sec.color, background: `${sec.color}15`, padding: '0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {sec.icon}
+                  </div>
+                  <span style={{ fontSize: '0.78rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-color)', padding: '0.25rem 0.6rem', borderRadius: '6px', color: 'var(--text-secondary)' }}>
+                    {sec.countLabel}
+                  </span>
+                </div>
+                <h3 style={{ color: '#fff', fontSize: '1.15rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>{sec.label}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>{sec.desc}</p>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                <span style={{ fontSize: '1.6rem', color: sec.color, fontWeight: 800 }}>{sec.count}</span>
+                <span style={{ color: sec.color, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 600 }}>
+                  دخول القسم <ChevronLeft size={16} />
+                </span>
+              </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Stock, Weight & Money Dashboard */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-
-        {/* Gold Inventory Stats */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1.5rem' }}>
-          <h2 style={sectionHeaderStyle}>
-            <Coins size={20} color="var(--gold-primary)" /> جرد مخزون الذهب (عالي الدقة)
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={statItemStyle}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>وزن الذهب الكلي (غرام)</span>
-              <span style={{ fontSize: '1.4rem', color: '#fff', fontWeight: 700 }}>{stats.goldGrams.toFixed(2)} غرام</span>
-            </div>
-            <div style={statItemStyle}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>وزن الذهب (بالمثقال)</span>
-              <span style={{ fontSize: '1.4rem', color: 'var(--gold-primary)', fontWeight: 700 }}>{stats.goldMithqals.toFixed(2)} مثقال</span>
-            </div>
-            <div style={{ ...statItemStyle, gridColumn: 'span 2' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>إجمالي صياغة الذهب في المعرض</span>
-              <span style={{ fontSize: '1.4rem', color: '#10b981', fontWeight: 700 }}>{formatCurrency(stats.totalGoldMakingUSD, 'USD')}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Silver Inventory Stats */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1.5rem' }}>
-          <h2 style={sectionHeaderStyle}>
-            <Scale size={20} color="#cbd5e1" /> جرد مخزون الفضة
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={statItemStyle}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>وزن الفضة الكلي (غرام)</span>
-              <span style={{ fontSize: '1.4rem', color: '#fff', fontWeight: 700 }}>{stats.silverGrams.toFixed(2)} غرام</span>
-            </div>
-            <div style={statItemStyle}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>وزن الفضة (بالمثقال)</span>
-              <span style={{ fontSize: '1.4rem', color: '#94a3b8', fontWeight: 700 }}>{(stats.silverGrams / 5).toFixed(2)} مثقال</span>
-            </div>
-            <div style={{ ...statItemStyle, gridColumn: 'span 2' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>إجمالي صياغة الفضة في المعرض</span>
-              <span style={{ fontSize: '1.4rem', color: '#10b981', fontWeight: 700 }}>{formatCurrency(stats.totalSilverMakingUSD, 'USD')}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Status Breakdown & Quick Reports */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1.5rem', gridColumn: 'span 2' }}>
-          <h2 style={sectionHeaderStyle}>
-            <ShieldCheck size={20} color="#10b981" /> حالة مخزون المحل
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem' }}>
-            <div style={{ ...statItemStyle, borderRight: '4px solid #10b981' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>المتوفر للعرض</span>
-              <span style={{ fontSize: '1.5rem', color: '#10b981', fontWeight: 700 }}>{stats.inStockCount} قطع</span>
-            </div>
-            <div style={{ ...statItemStyle, borderRight: '4px solid #ef4444' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>القطع المنتهية (المحجوزة)</span>
-              <span style={{ fontSize: '1.5rem', color: '#ef4444', fontWeight: 700 }}>{stats.outOfStockCount} قطع</span>
-            </div>
-            <div style={{ ...statItemStyle, borderRight: '4px solid var(--gold-primary)', gridColumn: 'span 2' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>القيمة الإجمالية لأجور الصياغة (ذهب + فضة)</span>
-              <span style={{ fontSize: '1.6rem', color: 'var(--gold-primary)', fontWeight: 800 }}>{formatCurrency(stats.totalGoldMakingUSD + stats.totalSilverMakingUSD, 'USD')}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Navigation and Quick Links */}
-      <div style={{ padding: '1.5rem', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-        <h3 style={{ color: 'var(--gold-pale)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-          <TrendingUp size={20} /> روابط سريعة
-        </h3>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <Link href="/admin/products" style={{ padding: '0.6rem 1.2rem', background: 'rgba(197,168,92,0.1)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--gold-primary)', fontSize: '0.9rem', textDecoration: 'none' }}>+ إضافة منتج جديد</Link>
-          <Link href="/admin/settings" style={{ padding: '0.6rem 1.2rem', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-color)', borderRadius: '8px', color: '#818cf8', fontSize: '0.9rem', textDecoration: 'none' }}>✏️ تعديل أسعار الذهب والفضة</Link>
-          <Link href="/admin/workers" style={{ padding: '0.6rem 1.2rem', background: 'rgba(16,185,129,0.1)', border: '1px solid var(--border-color)', borderRadius: '8px', color: '#10b981', fontSize: '0.9rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.35rem' }}><Users size={16} /> إدارة موظفي المعرض</Link>
-          <Link href="/" target="_blank" style={{ padding: '0.6rem 1.2rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem', textDecoration: 'none' }}>↗ عرض موقع كليوباترا</Link>
+      {/* Quick Status / Help Guidelines Footer */}
+      <div style={{ padding: '1.5rem', background: 'rgba(197,168,92,0.05)', borderRadius: '16px', border: '1px solid rgba(197,168,92,0.15)', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+        <span style={{ fontSize: '1.8rem', lineHeight: '1' }}>💡</span>
+        <div>
+          <h4 style={{ color: 'var(--gold-pale)', margin: '0 0 0.4rem 0', fontWeight: 700 }}>تعليمات الاستخدام السريع للوحة التحكم</h4>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.83rem', lineHeight: '1.6', margin: 0 }}>
+            لضمان التحديث اللحظي لأسعار القطع المعروضة للزوار على الواجهة العامة للموقع، يُرجى الحفاظ على تحديث أسعار صرف الدولار وأسعار صياغة المصوغات من قسم "إعدادات المنصة". عند استلام أي طلب شراء جديد من زائر، ستسمع رنيناً وتصلك إشعارات وتفاصيل الفاتورة مباشرةً على بوت التليغرام المرتبط بمتجرك.
+          </p>
         </div>
       </div>
     </div>

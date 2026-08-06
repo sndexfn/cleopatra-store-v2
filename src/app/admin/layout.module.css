@@ -3,13 +3,46 @@
   background: var(--bg-primary); direction: rtl;
 }
 
+.mobileHeader {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1011;
+}
+
+.menuToggleBtn {
+  background: none;
+  border: none;
+  color: var(--gold-pale);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileTitle {
+  color: var(--gold-pale);
+  font-weight: 700;
+  font-size: 1.1rem;
+  font-family: var(--font-heading);
+}
+
+.overlay {
+  display: none;
+}
+
 .sidebar {
   width: 260px; flex-shrink: 0;
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-color);
   display: flex; flex-direction: column;
   position: fixed; top: 0; right: 0;
-  height: 100vh; z-index: 100;
+  height: 100vh; z-index: 1009;
   overflow-y: auto;
 }
 
@@ -54,7 +87,7 @@
 
 .mainContent {
   flex: 1; margin-right: 260px;
-  padding: 1.5rem 2rem; min-height: 100vh;
+  padding: 2rem; min-height: 100vh;
   overflow-y: auto;
 }
 
@@ -67,7 +100,44 @@
 .backBtn:hover { border-color: var(--gold-primary); color: var(--gold-primary); }
 
 @media (max-width: 768px) {
-  .sidebar { width: 100%; height: auto; position: relative; }
-  .adminLayout { flex-direction: column; }
-  .mainContent { margin-right: 0; padding: 1rem; }
+  .mobileHeader {
+    display: flex;
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1005;
+  }
+
+  .sidebar {
+    width: 270px;
+    position: fixed;
+    top: 0;
+    right: -270px; /* Hidden off-screen in RTL */
+    height: 100vh;
+    z-index: 1010;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar.open {
+    right: 0; /* Slide in on menu toggle */
+  }
+
+  .adminLayout {
+    flex-direction: column;
+  }
+
+  .mainContent {
+    margin-right: 0;
+    padding: 1.5rem 1rem;
+  }
+
+  .backBtn {
+    margin-bottom: 1rem;
+  }
 }

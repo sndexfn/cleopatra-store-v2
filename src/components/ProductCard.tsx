@@ -7,7 +7,7 @@ import { useCartStore } from "@/lib/store";
 import { useLangStore } from "@/lib/langStore";
 import { arabicDict, englishDict } from "@/lib/dictionary";
 import styles from "./ProductCard.module.css";
-import { ShoppingCart, Eye, X, Scale, Coins, ShieldCheck } from "lucide-react";
+import { ShoppingCart, Eye, X, Scale, Coins, ShieldCheck, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -19,6 +19,13 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
   const { lang } = useLangStore();
   const d = lang === "ar" ? arabicDict : englishDict;
   const [showModal, setShowModal] = useState(false);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
+
+  // Safe parsing of multiple comma-separated image URLs
+  const imageUrls = product.imageUrl
+    ? product.imageUrl.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const displayImage = imageUrls[0] || '/logo.jpg';
 
   let prices = { totalUSD: 0, totalIQD: 0 };
   if (goldPrices) {
@@ -30,16 +37,31 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
     addItem(product);
   };
 
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveImgIndex(prev => (prev === 0 ? imageUrls.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveImgIndex(prev => (prev === imageUrls.length - 1 ? 0 : prev + 1));
+  };
+
   const mithqals = gramsToMithqal(product.weightGrams);
 
   return (
     <>
-      <div className={styles.card} onClick={() => setShowModal(true)} style={{ cursor: 'pointer' }}>
+      <div className={styles.card} onClick={() => { setShowModal(true); setActiveImgIndex(0); }} style={{ cursor: 'pointer' }}>
         <div className={styles.imageContainer}>
-          <img src={product.imageUrl} alt={product.name} loading="lazy" />
+          <img src={displayImage} alt={product.name} loading="lazy" onError={e => { (e.target as HTMLImageElement).src = '/logo.jpg'; }} />
           <span className={styles.karatBadge}>
             {product.metal === 'silver' ? 'فضة نقية' : `${d.karat} ${product.karat}`}
           </span>
+          {imageUrls.length > 1 && (
+            <span style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.7)', borderRadius: '4px', padding: '2px 6px', fontSize: '0.7rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <ImageIcon size={10} color="var(--gold-primary)" /> {imageUrls.length} صور
+            </span>
+          )}
           <div className={styles.hoverOverlay} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', opacity: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s' }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
@@ -96,17 +118,38 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
               <h2 style={{ color: 'var(--gold-pale)', fontSize: '1.4rem', margin: 0, fontWeight: 700 }}>تفاصيل القطعة الملكية</h2>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                 <X size={24} />
               </button>
             </div>
 
             {/* Modal Content */}
             <div style={{ padding: '1.5rem', overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-              {/* Image Column */}
-              <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', height: '300px' }}>
-                <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <span style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--gold-primary)', color: '#000', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+
+              {/* Image Column with Gallery Slider */}
+              <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', height: '300px', background: 'rgba(0,0,0,0.2)' }}>
+                <img src={imageUrls[activeImgIndex] || '/logo.jpg'} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.2s ease-in-out' }} onError={e => { (e.target as HTMLImageElement).src = '/logo.jpg'; }} />
+
+                {imageUrls.length > 1 && (
+                  <>
+                    {/* Left Swipe Button */}
+                    <button onClick={handlePrevImage} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', zIndex: 10 }}>
+                      <ChevronLeft size={18} />
+                    </button>
+                    {/* Right Swipe Button */}
+                    <button onClick={handleNextImage} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', zIndex: 10 }}>
+                      <ChevronRight size={18} />
+                    </button>
+                    {/* Slider Indicator Dots */}
+                    <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 10 }}>
+                      {imageUrls.map((_, idx) => (
+                        <span key={idx} style={{ width: '8px', height: '8px', borderRadius: '50%', background: idx === activeImgIndex ? 'var(--gold-primary)' : 'rgba(255,255,255,0.4)', transition: 'background 0.2s' }} />
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <span style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--gold-primary)', color: '#000', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, zIndex: 5 }}>
                   {product.metal === 'silver' ? 'فضة نقية' : `ذهب عيار ${product.karat}`}
                 </span>
               </div>

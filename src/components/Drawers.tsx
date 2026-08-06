@@ -6,7 +6,6 @@ import styles from "./Drawers.module.css";
 import { X, Trash2, User, Phone, Mail, MapPin, CheckCircle, LogOut, LayoutDashboard } from "lucide-react";
 import { getLiveGoldPrices, calculateFinalPrice, formatCurrency, GoldPrices } from "@/lib/goldPrice";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { supabase, isAdmin } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -105,21 +104,25 @@ export default function Drawers() {
                 <p style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛒</p>
                 <p>سلتك فارغة</p>
               </div>
-            ) : items.map(item => (
-              <div key={item.product.id} className={styles.cartItem}>
-                <Image src={item.product.imageUrl} alt={item.product.name} width={60} height={60} className={styles.itemImage} />
-                <div className={styles.itemDetails}>
-                  <h4>{item.product.name}</h4>
-                  <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>عيار {item.product.karat}</p>
-                  <div className={styles.qControl}>
-                    <button onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}>-</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
+            ) : items.map(item => {
+              const itemImages = item.product.imageUrl ? item.product.imageUrl.split(',').map(s => s.trim()).filter(Boolean) : [];
+              const displayImg = itemImages[0] || '/logo.jpg';
+              return (
+                <div key={item.product.id} className={styles.cartItem}>
+                  <img src={displayImg} alt={item.product.name} width={60} height={60} className={styles.itemImage} style={{ objectFit: 'cover', borderRadius: '8px' }} onError={e => { (e.target as HTMLImageElement).src = '/logo.jpg'; }} />
+                  <div className={styles.itemDetails}>
+                    <h4>{item.product.name}</h4>
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>عيار {item.product.karat}</p>
+                    <div className={styles.qControl}>
+                      <button onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}>-</button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
+                    </div>
                   </div>
+                  <button onClick={() => removeItem(item.product.id)} className={styles.deleteBtn}><Trash2 size={16} /></button>
                 </div>
-                <button onClick={() => removeItem(item.product.id)} className={styles.deleteBtn}><Trash2 size={16} /></button>
-              </div>
-            ))}
+              );
+            })}
           </div>
           {items.length > 0 && (
             <div className={styles.drawerFooter}>

@@ -138,18 +138,18 @@ export default function Home() {
                 position: 'absolute',
                 inset: 0,
                 background: `url('${slide}') center/cover no-repeat`,
-                opacity: activeSlide === index ? 0.35 : 0,
+                opacity: activeSlide === index ? 0.65 : 0,
                 transition: 'opacity 1s ease-in-out',
                 zIndex: 1,
               }}
             />
           ))}
-          {/* High-contrast gradient overlay */}
+          {/* High-contrast gradient overlay for premium clarity and text readability */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to bottom, rgba(3,7,18,0.7) 0%, rgba(3,7,18,0.9) 100%)',
+              background: 'linear-gradient(to bottom, rgba(3, 7, 18, 0.45) 0%, rgba(3, 7, 18, 0.2) 50%, rgba(3, 7, 18, 0.85) 100%)',
               zIndex: 1,
             }}
           />

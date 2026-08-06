@@ -21,7 +21,14 @@ export default function Drawers() {
   const [orderDone, setOrderDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', city: '', notes: '' });
-  const [user, setUser] = useState<any>(null);
+  interface CustomUser {
+    id: string;
+    email?: string;
+    user_metadata?: {
+      full_name?: string;
+    };
+  }
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const router = useRouter();
 
@@ -29,12 +36,14 @@ export default function Drawers() {
     getLiveGoldPrices().then(setPrices);
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-        setIsAdminUser(isAdmin(session?.user?.email));
+        const u = session?.user;
+        setUser(u ? { id: u.id, email: u.email, user_metadata: u.user_metadata } : null);
+        setIsAdminUser(isAdmin(u?.email));
       });
       const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-        setUser(session?.user ?? null);
-        setIsAdminUser(isAdmin(session?.user?.email));
+        const u = session?.user;
+        setUser(u ? { id: u.id, email: u.email, user_metadata: u.user_metadata } : null);
+        setIsAdminUser(isAdmin(u?.email));
       });
       return () => listener.subscription.unsubscribe();
     }

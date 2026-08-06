@@ -18,7 +18,14 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [prices, setPrices] = useState<GoldPrices | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  interface CustomUser {
+    id: string;
+    email?: string;
+    user_metadata?: {
+      full_name?: string;
+    };
+  }
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const router = useRouter();
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -31,16 +38,20 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    setMounted(true);
-    fetchPrices();
+    Promise.resolve().then(() => {
+      setMounted(true);
+      fetchPrices();
+    });
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-        setIsAdminUser(isAdmin(session?.user?.email));
+        const u = session?.user;
+        setUser(u ? { id: u.id, email: u.email, user_metadata: u.user_metadata } : null);
+        setIsAdminUser(isAdmin(u?.email));
       });
       const { data: l } = supabase.auth.onAuthStateChange((_e, session) => {
-        setUser(session?.user ?? null);
-        setIsAdminUser(isAdmin(session?.user?.email));
+        const u = session?.user;
+        setUser(u ? { id: u.id, email: u.email, user_metadata: u.user_metadata } : null);
+        setIsAdminUser(isAdmin(u?.email));
       });
       return () => l.subscription.unsubscribe();
     }

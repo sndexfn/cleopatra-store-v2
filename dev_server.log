@@ -5,9 +5,27 @@
 ▲ Next.js 16.2.12 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 556ms
+✓ Ready in 515ms
 
-○ Compiling / ...
- GET / 200 in 4.9s (next.js: 4.4s, application-code: 539ms)
-Live gold price failed, using fallback
- GET /api/gold-price 200 in 762ms (next.js: 656ms, application-code: 106ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ HEAD / 200 in 3.6s (next.js: 3.2s, application-code: 389ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET / 200 in 136ms (next.js: 8ms, application-code: 128ms)
+ GET /api/gold-price 200 in 890ms (next.js: 575ms, application-code: 315ms)
+ GET /api/gold-price 200 in 237ms (next.js: 3ms, application-code: 234ms)
+ GET /api/gold-price 200 in 121ms (next.js: 5ms, application-code: 116ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /login 200 in 920ms (next.js: 763ms, application-code: 157ms)
+[browser] Image with src "/logo-new.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /api/gold-price 200 in 120ms (next.js: 3ms, application-code: 117ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /cart. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /cart 200 in 821ms (next.js: 675ms, application-code: 146ms)
+ GET /api/gold-price 200 in 124ms (next.js: 4ms, application-code: 119ms)
+ GET /api/gold-price 200 in 125ms (next.js: 6ms, application-code: 119ms)
+ GET /api/gold-price 200 in 117ms (next.js: 3ms, application-code: 114ms)
+ GET /api/gold-price 200 in 113ms (next.js: 2ms, application-code: 111ms)

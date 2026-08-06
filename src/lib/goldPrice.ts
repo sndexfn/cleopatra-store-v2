@@ -39,8 +39,12 @@ export async function getLiveGoldPrices(): Promise<GoldPrices> {
     try {
       const { data, error } = await supabase.from('site_settings').select('*');
       if (!error && data && data.length > 0) {
-        const obj: any = {};
-        data.forEach((row: any) => { obj[row.key] = row.value; });
+        interface SiteSettingRow {
+          key: string;
+          value: string;
+        }
+        const obj: Record<string, string> = {};
+        data.forEach((row: SiteSettingRow) => { obj[row.key] = row.value; });
 
         const overrideExchangeRate = obj.override_exchange_rate;
         const iqdRate = overrideExchangeRate ? parseFloat(overrideExchangeRate) : apiPrices.iqdExchangeRate;

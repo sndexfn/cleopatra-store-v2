@@ -4,7 +4,7 @@ import styles from './page.module.css';
 import { supabase, isAdmin } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, User, Lock, ArrowLeft, UserPlus, LogIn, KeyRound } from 'lucide-react';
+import { Mail, User, Lock, ArrowLeft, UserPlus, LogIn, KeyRound, AlertTriangle } from 'lucide-react';
 
 type Mode = 'choose' | 'login' | 'register' | 'otp';
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
     try {
       // Sign up with Email and Password
-      const { error: signUpErr } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password: password,
         options: {
@@ -51,6 +51,28 @@ export default function LoginPage() {
 
       if (signUpErr) {
         throw new Error(signUpErr.message);
+      }
+
+      // If email confirmation is disabled in Supabase, signUp returns the session immediately!
+      if (signUpData?.session) {
+        try {
+          await supabase.from('profiles').upsert({
+            id: signUpData.session.user.id,
+            email: signUpData.session.user.email,
+            full_name: fullName.trim(),
+            created_at: new Date().toISOString(),
+          }, { onConflict: 'id' });
+        } catch (profileErr) {
+          console.error('Error saving profile:', profileErr);
+        }
+
+        if (isAdmin(signUpData.session.user.email)) {
+          router.replace('/admin');
+        } else {
+          router.replace('/');
+        }
+        router.refresh();
+        return;
       }
 
       setOtpFor('register');
@@ -185,6 +207,12 @@ export default function LoginPage() {
     }
   };
 
+  const handleBypassOtp = () => {
+    // Graceful fallback to home page so they are never locked out of testing the app
+    router.replace('/');
+    router.refresh();
+  };
+
   const inp = `${styles.input}`;
   const inpWrap = `${styles.inputWrap}`;
 
@@ -279,17 +307,61 @@ export default function LoginPage() {
         {mode === 'otp' && (
           <>
             <h1 className={styles.title}>{otpFor === 'register' ? '✉️ تأكيد الحساب' : '🔐 رمز التحقق'}</h1>
-            <p className={styles.subtitle}>تم إرسال رمز مكوّن من 6 أرقام إلى بريدك الإلكتروني لضمان أمن حسابك:<br /><strong style={{ color: 'var(--gold-primary)', direction: 'ltr', display: 'inline-block' }}>{email}</strong></p>
+            <p className={styles.subtitle}>
+              تم إرسال الرمز أو رابط تأكيد الحساب إلى بريدك الإلكتروني لضمان الأمن:<br />
+              <strong style={{ color: 'var(--gold-primary)', direction: 'ltr', display: 'inline-block', margin: '0.5rem 0' }}>{email}</strong>
+            </p>
             <form onSubmit={handleVerify} className={styles.form}>
               <div className={inpWrap}>
                 <Lock size={16} className={styles.inputIcon} />
-                <input className={inp} type="text" placeholder="أدخل رمز التحقق..." inputMode="numeric"
+                <input className={inp} type="text" placeholder="أدخل رمز التحقق (أو اضغط الرابط)" inputMode="numeric"
                   value={otp} onChange={e => setOtp(e.target.value)} maxLength={8} required dir="ltr" autoFocus />
               </div>
               {error && <div className={styles.error}>{error}</div>}
+
               <button type="submit" className={styles.btn} disabled={loading}>
                 {loading ? <><span className={styles.spinner} /> جاري التحقق...</> : '✅ تأكيد والدخول إلى الحساب'}
               </button>
+
+              {/* Informative alert for SMTP / Email delay fallback */}
+              <div style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                borderRadius: '8px',
+                padding: '0.8rem',
+                fontSize: '0.8rem',
+                color: '#f59e0b',
+                display: 'flex',
+                gap: '0.5rem',
+                alignItems: 'flex-start',
+                marginTop: '0.5rem',
+                lineHeight: '1.4'
+              }}>
+                <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong>لم يصلك الرمز؟</strong><br />
+                  1. يرجى مراجعة مجلد الرسائل غير المرغوب فيها (Spam).<br />
+                  2. إذا كنت مدير الموقع، يمكنك إيقاف خيار &quot;Confirm email&quot; في لوحة تحكم Supabase لتسجيل وتفعيل الحسابات فوراً دون طلب الرمز.<br />
+                  3. أو يمكنك تخطي التأكيد والعودة للمتجر مباشرة للتجربة أدناه.
+                </div>
+              </div>
+
+              <button type="button" onClick={handleBypassOtp}
+                style={{
+                  background: 'none',
+                  border: '1px dashed var(--gold-primary)',
+                  borderRadius: '8px',
+                  color: 'var(--gold-primary)',
+                  padding: '0.6rem',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  marginTop: '0.5rem',
+                  fontWeight: 600
+                }}>
+                ✨ تخطي خطوة التحقق والذهاب للرئيسية
+              </button>
+
               <button type="button" className={styles.backBtn} onClick={() => { setMode(otpFor === 'register' ? 'register' : 'login'); reset(); }}>
                 ← تغيير البريد الإلكتروني
               </button>

@@ -59,7 +59,7 @@ export default function CartPage() {
 
                 return (
                   <div key={item.product.id} className={styles.cartItem}>
-                    <img src={item.product.imageUrl} alt={item.product.name} className={styles.itemImage} />
+                    <img src={item.product.imageUrl?.split(',')[0] || '/logo.jpg'} alt={item.product.name} className={styles.itemImage} />
                     <div className={styles.itemDetails}>
                       <h3 className={styles.itemName}>{item.product.name}</h3>
                       <p className={styles.itemMeta}>عيار {item.product.karat} | {item.product.weightGrams}غرام</p>

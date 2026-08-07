@@ -270,7 +270,7 @@ export default function Home() {
                 return (
                   <div key={p.id} className={styles.productCard}>
                     <div className={styles.productImgWrap}>
-                      <img src={p.imageUrl} alt={p.name} className={styles.productImg} />
+                      <img src={p.imageUrl?.split(',')[0] || '/logo.jpg'} alt={p.name} className={styles.productImg} />
                       <span className={styles.karatBadge}>{p.metal === 'silver' ? (lang === 'ar' ? 'فضة نقية' : 'Pure Silver') : `${d.karat} ${p.karat}`}</span>
                     </div>
                     <div className={styles.productBody}>

@@ -122,7 +122,7 @@ export default function FinancePage() {
                   <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
                     <td style={{ padding: '0.6rem 0.875rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {p.imageUrl && <img src={p.imageUrl} alt="" style={{ width: '28px', height: '28px', borderRadius: '5px', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                        {p.imageUrl && <img src={p.imageUrl.split(',')[0] || '/logo.jpg'} alt="" style={{ width: '28px', height: '28px', borderRadius: '5px', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                       </div>
                     </td>

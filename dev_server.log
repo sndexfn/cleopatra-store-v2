@@ -5,27 +5,51 @@
 ▲ Next.js 16.2.12 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 515ms
+✓ Ready in 514ms
 
+○ Compiling / ...
 ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- HEAD / 200 in 3.6s (next.js: 3.2s, application-code: 389ms)
+ HEAD / 200 in 4.0s (next.js: 3.6s, application-code: 391ms)
 ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET / 200 in 136ms (next.js: 8ms, application-code: 128ms)
- GET /api/gold-price 200 in 890ms (next.js: 575ms, application-code: 315ms)
- GET /api/gold-price 200 in 237ms (next.js: 3ms, application-code: 234ms)
- GET /api/gold-price 200 in 121ms (next.js: 5ms, application-code: 116ms)
-⚠ Unsupported metadata viewport is configured in metadata export in /login. Please move it to viewport export instead.
+ GET / 200 in 130ms (next.js: 5ms, application-code: 124ms)
+ GET /api/gold-price 200 in 860ms (next.js: 598ms, application-code: 262ms)
+ GET /api/gold-price 200 in 125ms (next.js: 3ms, application-code: 122ms)
+ GET /api/gold-price 200 in 116ms (next.js: 4ms, application-code: 113ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /shop. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /login 200 in 920ms (next.js: 763ms, application-code: 157ms)
-[browser] Image with src "/logo-new.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /api/gold-price 200 in 120ms (next.js: 3ms, application-code: 117ms)
-⚠ Unsupported metadata viewport is configured in metadata export in /cart. Please move it to viewport export instead.
+ GET /shop 200 in 901ms (next.js: 778ms, application-code: 123ms)
+ GET /api/gold-price 200 in 244ms (next.js: 4ms, application-code: 240ms)
+ GET /api/gold-price 200 in 123ms (next.js: 4ms, application-code: 119ms)
+ GET /api/gold-price 200 in 116ms (next.js: 4ms, application-code: 112ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /shop. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /cart 200 in 821ms (next.js: 675ms, application-code: 146ms)
- GET /api/gold-price 200 in 124ms (next.js: 4ms, application-code: 119ms)
- GET /api/gold-price 200 in 125ms (next.js: 6ms, application-code: 119ms)
- GET /api/gold-price 200 in 117ms (next.js: 3ms, application-code: 114ms)
- GET /api/gold-price 200 in 113ms (next.js: 2ms, application-code: 111ms)
+ GET /shop 200 in 97ms (next.js: 5ms, application-code: 92ms)
+ GET /api/gold-price 200 in 238ms (next.js: 4ms, application-code: 234ms)
+ GET /api/gold-price 200 in 115ms (next.js: 3ms, application-code: 113ms)
+ GET /api/gold-price 200 in 115ms (next.js: 3ms, application-code: 112ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /admin/products. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /admin/products 200 in 1057ms (next.js: 912ms, application-code: 145ms)
+ GET /api/gold-price 200 in 224ms (next.js: 5ms, application-code: 219ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /shop. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /shop 200 in 78ms (next.js: 6ms, application-code: 72ms)
+ GET /api/gold-price 200 in 233ms (next.js: 3ms, application-code: 230ms)
+ GET /api/gold-price 200 in 118ms (next.js: 3ms, application-code: 115ms)
+ GET /api/gold-price 200 in 111ms (next.js: 3ms, application-code: 108ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /admin/products. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /admin/products 200 in 69ms (next.js: 3ms, application-code: 66ms)
+ GET /api/gold-price 200 in 226ms (next.js: 3ms, application-code: 223ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /shop. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /shop 200 in 93ms (next.js: 9ms, application-code: 84ms)
+ GET /api/gold-price 200 in 236ms (next.js: 3ms, application-code: 233ms)
+ GET /api/gold-price 200 in 111ms (next.js: 2ms, application-code: 109ms)
+ GET /api/gold-price 200 in 115ms (next.js: 2ms, application-code: 112ms)
+⚠ Unsupported metadata viewport is configured in metadata export in /admin/products. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /admin/products 200 in 95ms (next.js: 5ms, application-code: 90ms)
+ GET /api/gold-price 200 in 223ms (next.js: 5ms, application-code: 219ms)

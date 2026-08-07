@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import styles from "./layout.module.css";
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Settings, Users } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Settings, Users, Menu, X, Coins } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase, isAdmin } from "@/lib/supabase";
@@ -12,6 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [adminEmail, setAdminEmail] = useState('');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function checkAdmin() {
@@ -48,23 +49,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', icon: <LayoutDashboard size={18} />, label: 'لوحة التحكم' },
     { href: '/admin/products', icon: <Package size={18} />, label: 'المنتجات' },
     { href: '/admin/orders', icon: <ShoppingCart size={18} />, label: 'الطلبات' },
+    { href: '/admin/finance', icon: <Coins size={18} />, label: 'المالية والمخزون' },
     { href: '/admin/workers', icon: <Users size={18} />, label: 'عمال وموظفي المعرض' },
     { href: '/admin/settings', icon: <Settings size={18} />, label: 'إعدادات الموقع' },
   ];
 
   return (
     <div className={styles.adminLayout}>
-      <aside className={styles.sidebar}>
+      {/* Mobile Top Header */}
+      <header className={styles.mobileHeader}>
+        <button onClick={() => setIsMobileSidebarOpen(true)} className={styles.menuToggleBtn} aria-label="Open Menu">
+          <Menu size={22} />
+        </button>
+        <div className={styles.mobileLogoRow}>
+          <span className={styles.mobileLogo}>👑</span>
+          <span className={styles.mobileTitle}>كليوباترا للذهب</span>
+        </div>
+        <button onClick={() => router.back()} className={styles.mobileBackBtn}>← رجوع</button>
+      </header>
+
+      {/* Backdrop Overlay */}
+      <div className={`${styles.overlay} ${isMobileSidebarOpen ? styles.overlayActive : ''}`} onClick={() => setIsMobileSidebarOpen(false)} />
+
+      {/* Sidebar aside */}
+      <aside className={`${styles.sidebar} ${isMobileSidebarOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.sidebarHeader}>
-          <div className={styles.sidebarLogo}>👑</div>
-          <div>
-            <p className={styles.sidebarTitle}>لوحة تحكم</p>
-            <p className={styles.sidebarEmail}>{adminEmail}</p>
+          <div className={styles.sidebarLogoRow}>
+            <div className={styles.sidebarLogo}>👑</div>
+            <div>
+              <p className={styles.sidebarTitle}>لوحة التحكم</p>
+              <p className={styles.sidebarEmail}>{adminEmail}</p>
+            </div>
           </div>
+          <button onClick={() => setIsMobileSidebarOpen(false)} className={styles.closeBtn} aria-label="Close Menu">
+            <X size={20} />
+          </button>
         </div>
         <nav className={styles.nav}>
           {navItems.map(item => (
             <Link key={item.href} href={item.href}
+              onClick={() => setIsMobileSidebarOpen(false)}
               className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}>
               {item.icon}<span>{item.label}</span>
             </Link>
@@ -77,6 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/" className={styles.viewSiteBtn} target="_blank">↗ عرض الموقع</Link>
         </div>
       </aside>
+
       <main className={styles.mainContent}>
         <button onClick={() => router.back()} className={styles.backBtn}>← رجوع</button>
         {children}

@@ -105,8 +105,8 @@ export default function StockPage() {
               </thead>
               <tbody>
                 {products.map((p, i) => {
-                  const gramPrice = p.metal === 'silver' ? prices?.usdPerGramSilver : prices?.usdPerGram21k;
-                  const priceUSD = prices ? (gramPrice * (p.weightGrams || 0)) + (p.makingChargeUSD || 0) : 0;
+                  const gramPrice = prices ? (p.metal === 'silver' ? prices.usdPerGramSilver : prices.usdPerGram21k) : 0;
+                  const priceUSD = (gramPrice * (p.weightGrams || 0)) + (p.makingChargeUSD || 0);
                   const priceIQD = prices ? priceUSD * prices.iqdExchangeRate : 0;
                   return (
                     <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>

@@ -1,14 +1,24 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { getLiveGoldPrices, formatIQD, formatUSD } from '@/lib/goldPrice';
+import { supabase, Product } from '@/lib/supabase';
+import { getLiveGoldPrices, formatIQD, formatUSD, GoldPrices } from '@/lib/goldPrice';
 import { TrendingUp, DollarSign, ShoppingBag, Package, RefreshCw, Weight } from 'lucide-react';
 import styles from './page.module.css';
 
+type Order = {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  total_usd: number;
+  total_iqd?: number;
+  status: string;
+  created_at: string;
+};
+
 export default function FinancePage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [prices, setPrices] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [prices, setPrices] = useState<GoldPrices | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -152,8 +162,8 @@ export default function FinancePage() {
               </thead>
               <tbody>
                 {inStockProducts.map((p, i) => {
-                  const gramPrice = p.metal === 'silver' ? prices?.usdPerGramSilver : prices?.usdPerGram21k;
-                  const priceUSD = prices ? (gramPrice * (p.weightGrams || 0)) + (p.makingChargeUSD || 0) : 0;
+                  const gramPrice = prices ? (p.metal === 'silver' ? prices.usdPerGramSilver : prices.usdPerGram21k) : 0;
+                  const priceUSD = (gramPrice * (p.weightGrams || 0)) + (p.makingChargeUSD || 0);
                   const priceIQD = priceUSD * (prices?.iqdExchangeRate || 1310);
                   return (
                     <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
@@ -197,8 +207,8 @@ export default function FinancePage() {
         {/* Mobile View */}
         <div className={styles.mobileCardsContainer}>
           {inStockProducts.map(p => {
-            const gramPrice = p.metal === 'silver' ? prices?.usdPerGramSilver : prices?.usdPerGram21k;
-            const priceUSD = prices ? (gramPrice * (p.weightGrams || 0)) + (p.makingChargeUSD || 0) : 0;
+            const gramPrice = prices ? (p.metal === 'silver' ? prices.usdPerGramSilver : prices.usdPerGram21k) : 0;
+            const priceUSD = (gramPrice * (p.weightGrams || 0)) + (p.makingChargeUSD || 0);
             const priceIQD = priceUSD * (prices?.iqdExchangeRate || 1310);
             return (
               <div key={p.id} className={styles.mobileProdCard}>

@@ -34,7 +34,7 @@ export const MOCK_PRODUCTS: Product[] = [
     name: "قلادة كليوباترا الملكية",
     description: "قلادة ذهبية عيار 21 مصممة بتفاصيل فرعونية دقيقة تعكس الفخامة الأصيلة.",
     karat: 21, weightGrams: 25.5, makingChargeUSD: 150,
-    imageUrl: "https://images.unsplash.com/photo-1599643478514-4a73229b1fbf?q=80&w=800&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1599643478514-4a73229b1fbf?q=80&w=800&auto=format&fit=crop,https://images.unsplash.com/photo-1605100804763-247f67b2548e?q=80&w=800&auto=format&fit=crop,https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800&auto=format&fit=crop",
     inStock: true,
     metal: 'gold',
   },

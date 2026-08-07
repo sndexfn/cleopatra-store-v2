@@ -19,6 +19,10 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
   const { lang } = useLangStore();
   const d = lang === "ar" ? arabicDict : englishDict;
   const [showModal, setShowModal] = useState(false);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+
+  const allImages = product.imageUrl ? product.imageUrl.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const mainImage = allImages[0] || '/logo.jpg';
 
   let prices = { totalUSD: 0, totalIQD: 0 };
   if (goldPrices) {
@@ -34,9 +38,9 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
 
   return (
     <>
-      <div className={styles.card} onClick={() => setShowModal(true)} style={{ cursor: 'pointer' }}>
+      <div className={styles.card} onClick={() => { setShowModal(true); setActiveImageIdx(0); }} style={{ cursor: 'pointer' }}>
         <div className={styles.imageContainer}>
-          <img src={product.imageUrl} alt={product.name} loading="lazy" />
+          <img src={mainImage} alt={product.name} loading="lazy" />
           <span className={styles.karatBadge}>
             {product.metal === 'silver' ? 'فضة نقية' : `${d.karat} ${product.karat}`}
           </span>
@@ -105,10 +109,32 @@ export default function ProductCard({ product, goldPrices }: ProductCardProps) {
             <div style={{ padding: '1.5rem', overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
               {/* Image Column */}
               <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', height: '300px' }}>
-                <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <span style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--gold-primary)', color: '#000', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                {allImages.length > 0 ? (
+                  <img src={allImages[activeImageIdx]} alt={`${product.name} - ${activeImageIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.3s ease' }} />
+                ) : (
+                  <img src="/logo.jpg" alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+
+                <span style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--gold-primary)', color: '#000', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, zIndex: 10 }}>
                   {product.metal === 'silver' ? 'فضة نقية' : `ذهب عيار ${product.karat}`}
                 </span>
+
+                {allImages.length > 1 && (
+                  <>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setActiveImageIdx(prev => (prev === 0 ? allImages.length - 1 : prev - 1)); }} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold', zIndex: 10 }}>
+                      ‹
+                    </button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setActiveImageIdx(prev => (prev === allImages.length - 1 ? 0 : prev + 1)); }} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold', zIndex: 10 }}>
+                      ›
+                    </button>
+
+                    <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', background: 'rgba(0,0,0,0.4)', padding: '4px 8px', borderRadius: '10px', zIndex: 10 }}>
+                      {allImages.map((_, idx) => (
+                        <button key={idx} type="button" onClick={(e) => { e.stopPropagation(); setActiveImageIdx(idx); }} style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', background: idx === activeImageIdx ? 'var(--gold-primary)' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0 }} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Specs Column */}

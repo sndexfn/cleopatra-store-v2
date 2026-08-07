@@ -107,7 +107,7 @@ export default function Drawers() {
               </div>
             ) : items.map(item => (
               <div key={item.product.id} className={styles.cartItem}>
-                <Image src={item.product.imageUrl} alt={item.product.name} width={60} height={60} className={styles.itemImage} />
+                <Image src={item.product.imageUrl?.split(',')[0] || '/logo.jpg'} alt={item.product.name} width={60} height={60} className={styles.itemImage} />
                 <div className={styles.itemDetails}>
                   <h4>{item.product.name}</h4>
                   <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>عيار {item.product.karat}</p>
